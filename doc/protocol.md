@@ -7,9 +7,11 @@ This client-server protocol describes the following scenarios:
 - Disconnection from the server.
 - Handling invalid messages.
 
-In the description below, `C -> S` represents a message from the client `C` is send to server `S`. When applicable, `C` is extended with a number to indicate a specific client, e.g., `C1`, `C2`, etc. The keyword `others` is used to indicate all other clients except for the client who made the request. Messages can contain a JSON body. Text shown between `<` and `>` are placeholders.
+In the description below, `C -> S` represents a message from the client `C` is sent to server `S`. When applicable, `C` is extended with a number to indicate a specific client, e.g., `C1`, `C2`, etc. The keyword `others` is used to indicate all other clients except for the client who made the request. Messages can contain a JSON body. Text shown between `<` and `>` are placeholders.
 
 The protocol follows the formal JSON specification, RFC 8259, available on https://www.rfc-editor.org/rfc/rfc8259.html
+
+All messages may end using Linux line endings (\n) or windows line endings (\r\n) and client and server should interpret both cases as valid messages.
 
 # 1. Establishing a connection
 
@@ -31,7 +33,8 @@ S -> C: LOGON_RESP {"status":"OK"}
 ```
 
 - `<username>`: the username of the user that needs to be logged in.
-      To other clients (Only applicable when working on Level 2):
+
+To other clients (Only applicable when working on Level 2):
 ```
 S -> others: JOINED {"username":"<username>"}
 ```
