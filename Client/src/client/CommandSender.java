@@ -11,8 +11,7 @@ public class CommandSender {
         connection.sendMessage(command);
     }
 
-    public void login(String username) {
-        String command = "LOGON {\"username\":\"" + username + "\"}";
-        sendCommand(command);
+    public void quit() {
+        sendCommand("BYE");
     }
 }

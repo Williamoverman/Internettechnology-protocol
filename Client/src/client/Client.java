@@ -1,17 +1,18 @@
 package client;
 
-import utils.Connection;
+import utils.Config;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
-    private Socket socket;
-    private BufferedReader bufferedReader;
-    private PrintWriter writer;
-    private Scanner scanner;
-    private Thread readerThread;
+    private ServerConnection connection;
+    private MessageHandler messageHandler;
+    private MessageListener messageListener;
+    private CommandSender commandSender;
+    private UserInputHandler inputHandler;
+    private Thread listenerThread;
 
     public static void main(String[] args) {
         Client client = new Client();
@@ -20,60 +21,51 @@ public class Client {
 
     public void start() {
         try {
-            connect();
-            startMessageListener();
+            initialize();
+            startMessageListening();
             handleUserInput();
-        } catch (IOException ex) {
-            System.err.println("Connection error: " + ex.getMessage());
+        } catch (IOException e) {
+            System.err.println("Failed to connect: " + e.getMessage());
         } finally {
-            disconnect();
+            shutdown();
         }
     }
 
-    private static void connect() {
-        try (Socket socket = new Socket(Connection.SERVER_ADDRESS, Connection.SERVER_PORT)) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+    private void initialize() throws IOException {
+        System.out.println("Connecting to server...");
 
-            Scanner scanner = new Scanner(System.in);
+        connection = new ServerConnection();
+        connection.connect();
 
-            String greeting = reader.readLine();
-            System.out.println("Server: " + greeting);
+        messageHandler = new MessageHandler(connection);
+        commandSender = new CommandSender(connection);
+        inputHandler = new UserInputHandler(commandSender);
+        messageListener = new MessageListener(connection, messageHandler);
 
-            Thread readerThread = new Thread(() -> {
-               try {
-                   String line;
-                   while ((line = reader.readLine()) != null) {
-                        if (line.equalsIgnoreCase("ping"))
-                            writer.println("PONG");
-                        System.out.println("Server " + line);
-                   }
-               } catch (IOException e) {
-                   System.out.println("Connection closed");
-               }
-            });
-            readerThread.start();
-
-            System.out.println("\nEnter commands (e.g., LOGON {\"username\":\"yourname\"}):");
-            while (scanner.hasNextLine()) {
-                String command = scanner.nextLine();
-                if (command.equalsIgnoreCase("exit"))
-                    break;
-                writer.println(command);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        System.out.println("Connected successfully!\n");
     }
 
-    private void disconnect() {
-        try {
-            if (socket != null) socket.close();
-            if (bufferedReader != null) bufferedReader.close();
-            if (writer != null) writer.close();
-            if (scanner != null) scanner.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage());
-        }
+    private void startMessageListening() {
+        listenerThread = new Thread(messageListener);
+        listenerThread.start();
+    }
+
+    private void handleUserInput() {
+        inputHandler.start();
+    }
+
+    private void shutdown() {
+        System.out.println("\nShutting down...");
+
+        if (messageListener != null)
+            messageListener.stop();
+
+        if (inputHandler != null)
+            inputHandler.close();
+
+        if (connection != null)
+            connection.disconnect();
+
+        System.out.println("Disconnected");
     }
 }

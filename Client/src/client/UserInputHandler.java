@@ -6,8 +6,8 @@ public class UserInputHandler {
     private final Scanner scanner;
     private final CommandSender commandSender;
 
-    public UserInputHandler(Scanner scanner, CommandSender commandSender) {
-        this.scanner = scanner;
+    public UserInputHandler(CommandSender commandSender) {
+        this.scanner = new Scanner(System.in);
         this.commandSender = commandSender;
     }
 
@@ -42,7 +42,7 @@ public class UserInputHandler {
         System.out.println("\n==== Chat Client Commands ====");
         System.out.println("LOGON {\"username\":\"your-username\"} - Login with username");
         System.out.println("help - Show this help");
-        System.out.println("exit - Exit client");
+        System.out.println("exit - Exit client and server");
         System.out.println("============================\n");
     }
 }
