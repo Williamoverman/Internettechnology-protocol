@@ -11,6 +11,14 @@ public class CommandSender {
         connection.sendMessage(command);
     }
 
+    public void login(String username) {
+        connection.sendMessage("LOGON {\"username\":\"" + username + "\"}");
+    }
+
+    public void broadcast(String message) {
+        connection.sendMessage("BROADCAST_REQ {\"message\":\"" + message + "\"}");
+    }
+
     public void quit() {
         sendCommand("BYE");
     }

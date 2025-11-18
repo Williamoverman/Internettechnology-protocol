@@ -42,13 +42,13 @@ public class ServerConnection {
     public void sendMessage(String message) {
         if (connected && writer != null) {
             writer.println(message);
+            writer.flush();
         }
     }
 
     public String readMessage() throws IOException {
-        if (connected && reader != null) {
+        if (connected && reader != null)
             return reader.readLine();
-        }
         return null;
     }
 

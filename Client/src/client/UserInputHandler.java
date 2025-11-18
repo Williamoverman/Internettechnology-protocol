@@ -30,6 +30,26 @@ public class UserInputHandler {
                 continue;
             }
 
+            if (input.toLowerCase().startsWith("login")) {
+                String[] parts = input.split(" ", 2);
+                if (parts.length < 2) {
+                    System.out.println("Usage: login <username>");
+                    continue;
+                }
+                commandSender.login(parts[1]);
+                continue;
+            }
+
+            if (input.toLowerCase().startsWith("broadcast")) {
+                String[] parts = input.split(" ", 2);
+                if (parts.length < 2) {
+                    System.out.println("Usage: broadcast <message>");
+                    continue;
+                }
+                commandSender.broadcast(parts[1]);
+                continue;
+            }
+
             commandSender.sendCommand(input);
         }
     }
@@ -40,7 +60,8 @@ public class UserInputHandler {
 
     private void printHelp() {
         System.out.println("\n==== Chat Client Commands ====");
-        System.out.println("LOGON {\"username\":\"your-username\"} - Login with username");
+        System.out.println("login <username> - Login with username");
+        System.out.println("broadcast <message> - Broadcast a message");
         System.out.println("help - Show this help");
         System.out.println("exit - Exit client and server");
         System.out.println("============================\n");
