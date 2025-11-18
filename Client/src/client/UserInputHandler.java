@@ -20,7 +20,7 @@ public class UserInputHandler {
             if (input.isEmpty())
                 continue;
 
-            if (input.equalsIgnoreCase("exit") || input.equalsIgnoreCase("quit")) {
+            if (input.equalsIgnoreCase("bye")) {
                 commandSender.quit();
                 break;
             }
@@ -63,7 +63,7 @@ public class UserInputHandler {
         System.out.println("login <username> - Login with username");
         System.out.println("broadcast <message> - Broadcast a message");
         System.out.println("help - Show this help");
-        System.out.println("exit - Exit client and server");
+        System.out.println("bye - Exit server and client");
         System.out.println("============================\n");
     }
 }
