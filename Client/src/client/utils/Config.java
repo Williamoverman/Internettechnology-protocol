@@ -1,4 +1,4 @@
-package utils;
+package client.utils;
 
 public class Config {
     public static String SERVER_ADDRESS = "127.0.0.1";

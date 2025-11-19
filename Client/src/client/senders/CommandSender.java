@@ -1,4 +1,6 @@
-package client;
+package client.senders;
+
+import client.connection.ServerConnection;
 
 public class CommandSender {
     private final ServerConnection connection;

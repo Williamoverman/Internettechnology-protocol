@@ -1,6 +1,6 @@
-package client;
+package client.connection;
 
-import utils.Config;
+import client.utils.Config;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,9 +19,6 @@ public class ServerConnection {
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer = new PrintWriter(socket.getOutputStream(), true);
         connected = true;
-
-        String greeting = reader.readLine();
-        System.out.println("Server: " + greeting);
     }
 
     public void disconnect() {

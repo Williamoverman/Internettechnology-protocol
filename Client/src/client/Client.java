@@ -1,5 +1,11 @@
 package client;
 
+import client.connection.ServerConnection;
+import client.handlers.MessageHandler;
+import client.handlers.UserInputHandler;
+import client.listeners.MessageListener;
+import client.senders.CommandSender;
+
 import java.io.*;
 
 public class Client {

@@ -1,67 +1,17 @@
-package client;
+package client.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class MessageHandler {
-    private final ServerConnection connection;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-    public MessageHandler(ServerConnection connection) {
-        this.connection = connection;
-    }
+public class JsonParsers {
+    private final ObjectMapper mapper;
 
-    /**
-     * Message handler for incoming server messages
-     * @param message the message to handle
-     */
-    public void handleMessage(String message) {
-        if (message == null)
-            return;
-
-        if (message.equalsIgnoreCase("ping")) {
-            connection.sendMessage("PONG");
-            return;
-        }
-
-        // Message if someone leaves
-        if (message.startsWith("LEFT ")) {
-            parseAndPrintMessage(message.substring("LEFT ".length()), "LEFT");
-            return;
-        }
-
-        // exact match for server broadcast from other users
-        if (message.startsWith("BROADCAST ")) {
-            parseAndPrintMessage(message.substring("BROADCAST ".length()), "BROADCAST");
-            return;
-        }
-
-        // Handle hangup (disconnect)
-        if (message.startsWith("HANGUP ")) {
-            parseHangup(message.substring("HANGUP ".length()));
-            return;
-        }
-
-        // Handle pong error
-        if (message.startsWith("PONG_ERROR ")) {
-            parseError(message.substring("PONG_ERROR ".length()));
-            return;
-        }
-
-        // Handle unknown command or parse error (plain text, no JSON)
-        if (message.equals("UNKNOWN_COMMAND") || message.equals("PARSE_ERROR")) {
-            System.out.println("[" + message + "]");
-            return;
-        }
-
-        // server responses
-        if (message.contains("RESP")) {
-            if (message.startsWith("BROADCAST_RESP "))
-                parseResponse(message.substring("BROADCAST_RESP ".length()));
-            else if (message.startsWith("LOGON_RESP "))
-                parseResponse(message.substring("LOGON_RESP ".length()));
-            else if (message.startsWith("BYE_RESP "))
-                parseResponse(message.substring("BYE_RESP ".length()));
-        }
+    public JsonParsers() {
+        this.mapper = new ObjectMapper();
     }
 
     /**
@@ -69,7 +19,7 @@ public class MessageHandler {
      * @param jsonPart the json to parse
      * @param type what type of server message
      */
-    private void parseAndPrintMessage(String jsonPart, String type) {
+    public void parseAndPrintMessage(String jsonPart, String type) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode jsonNode = mapper.readTree(jsonPart);
@@ -100,7 +50,7 @@ public class MessageHandler {
      * parse hangup
      * @param jsonPart json to parse
      */
-    private void parseHangup(String jsonPart) {
+    public void parseHangup(String jsonPart) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode jsonNode = mapper.readTree(jsonPart);
@@ -111,11 +61,9 @@ public class MessageHandler {
                     default -> "Unknown reason: " + reason;
                 };
                 System.err.println("[HANGUP] " + desc);
-                connection.disconnect();
             }
         } catch (Exception e) {
             System.err.println("Failed to parse hangup: " + e.getMessage());
-            connection.disconnect();
         }
     }
 
@@ -123,7 +71,7 @@ public class MessageHandler {
      * parse errors
      * @param jsonPart json to parse
      */
-    private void parseError(String jsonPart) {
+    public void parseError(String jsonPart) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode jsonNode = mapper.readTree(jsonPart);
@@ -144,7 +92,7 @@ public class MessageHandler {
      * parse response
      * @param jsonPart json to parse
      */
-    private void parseResponse(String jsonPart) {
+    public void parseResponse(String jsonPart) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             JsonNode jsonNode = mapper.readTree(jsonPart);
@@ -164,5 +112,37 @@ public class MessageHandler {
         } catch (Exception e) {
             System.err.println("Failed to parse response: " + e.getMessage());
         }
+    }
+
+    /**
+     * parse HI
+     * @param jsonPart json to parse
+     */
+    public void parseHi(String jsonPart) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = mapper.readTree(jsonPart);
+            if (jsonNode.has("version"))
+                System.out.println("Version: " + jsonNode.get("version"));
+        } catch (Exception e) {
+            System.err.println("Failed to parse response: " + e.getMessage());
+        }
+    }
+
+    public HashMap<String, String> genericParser(ArrayList<String> valuesToParse, String jsonBody) {
+        HashMap<String, String> parsedValues = new HashMap<>();
+
+        try {
+            for (String value : valuesToParse) {
+                JsonNode jsonNode = mapper.readTree(jsonBody);
+                if (jsonNode.has(value)) {
+                    parsedValues.put(value, jsonNode.get(value).asText());
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
+        return parsedValues;
     }
 }

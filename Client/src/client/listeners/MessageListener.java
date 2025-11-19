@@ -1,4 +1,7 @@
-package client;
+package client.listeners;
+
+import client.handlers.MessageHandler;
+import client.connection.ServerConnection;
 
 import java.io.IOException;
 
