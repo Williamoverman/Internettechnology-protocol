@@ -1,8 +1,7 @@
 package client.handlers;
 
 import client.protocols.ServerMessageHandler;
-import client.protocols.commands.BroadcastCommand;
-import client.protocols.commands.HiCommand;
+import client.protocols.commands.*;
 import client.utils.JsonParsers;
 
 import java.util.HashMap;
@@ -22,12 +21,12 @@ public class MessageDispatcher {
     private void registerHandlers() {
         handlers.put("HI", json -> new HiCommand(json).print());
         handlers.put("BROADCAST", json -> new BroadcastCommand(json).print());
-        handlers.put("LEFT", json -> jsonParsers.parseAndPrintMessage(json, "LEFT"));
-        handlers.put("LOGON_RESP", jsonParsers::parseResponse);
-        handlers.put("BROADCAST_RESP", jsonParsers::parseResponse);
-        handlers.put("BYE_RESP", jsonParsers::parseResponse);
-        handlers.put("HANGUP", jsonParsers::parseHangup);
-        handlers.put("PONG_ERROR", jsonParsers::parseError);
+        handlers.put("LEFT", json -> new LeftCommand(json).print());
+        handlers.put("LOGON_RESP", jsonParsers::parseStatusResponse);
+        handlers.put("BROADCAST_RESP", jsonParsers::parseStatusResponse);
+        handlers.put("BYE_RESP", jsonParsers::parseStatusResponse);
+        handlers.put("HANGUP", json -> new HangupCommand(json).print());
+        handlers.put("PONG_ERROR", jsonParsers::parseStatusResponse);
     }
 
     /**

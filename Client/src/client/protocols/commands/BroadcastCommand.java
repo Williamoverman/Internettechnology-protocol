@@ -1,5 +1,7 @@
 package client.protocols.commands;
 
+import client.protocols.Command;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -17,6 +19,7 @@ public class BroadcastCommand implements Command {
         this.message = parsedValues.get("message");
     }
 
+    @Override
     public void print() {
         System.out.println("[BROADCAST] <" + username + ">: " + message);
     }

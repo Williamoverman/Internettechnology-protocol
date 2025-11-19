@@ -16,7 +16,7 @@ public class Client {
     private UserInputHandler inputHandler;
     private Thread listenerThread;
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         Client client = new Client();
         client.start();
     }
