@@ -1,14 +1,14 @@
-package client.protocols.commands;
+package client.protocols.messages;
 
-import client.protocols.Command;
+import client.protocols.Message;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class HangupCommand implements Command {
+public class HangupMessage implements Message {
     private final String reason;
 
-    public HangupCommand(String jsonBody) {
+    public HangupMessage(String jsonBody) {
         ArrayList<String> jsonValues = new ArrayList<>();
         jsonValues.add("reason");
 

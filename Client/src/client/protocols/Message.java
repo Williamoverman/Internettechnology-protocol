@@ -2,7 +2,7 @@ package client.protocols;
 
 import client.utils.JsonParsers;
 
-public interface Command {
+public interface Message {
     JsonParsers jsonParser = new JsonParsers();
 
     void print();

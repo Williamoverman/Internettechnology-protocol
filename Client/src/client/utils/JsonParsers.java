@@ -18,11 +18,13 @@ public class JsonParsers {
      * parse status response
      * @param jsonPart json to parse
      */
-    public void parseStatusResponse(String jsonPart) {
+    public String parseStatusResponse(String jsonPart) {
+        String status = "";
+
         try {
             JsonNode jsonNode = mapper.readTree(jsonPart);
             if (jsonNode.has("status") && jsonNode.get("status").asText().equalsIgnoreCase("OK")) {
-                System.out.println("[OK]");
+                status = "[" + jsonNode.get("status").asText() + "]";
             } else if (jsonNode.has("code")) {
                 String code = jsonNode.has("code") ? jsonNode.get("code").asText() : "Unknown error";
                 String desc = switch (code) {
@@ -33,11 +35,13 @@ public class JsonParsers {
                     case "8000" -> "Pong without ping";
                     default -> code;
                 };
-                System.out.println("[ERROR] " + desc);
+                status = "[ERROR] " + desc;
             }
         } catch (Exception e) {
             System.err.println("Failed to parse response: " + e.getMessage());
         }
+
+        return status;
     }
 
     /**

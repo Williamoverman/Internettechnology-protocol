@@ -1,17 +1,15 @@
 package client.handlers;
 
 import client.protocols.ServerMessageHandler;
-import client.protocols.commands.*;
+import client.protocols.messages.*;
 import client.utils.JsonParsers;
 
 import java.util.HashMap;
 
 public class MessageDispatcher {
     private final HashMap<String, ServerMessageHandler> handlers = new HashMap<>();
-    private final JsonParsers jsonParsers;
 
     public MessageDispatcher() {
-        this.jsonParsers = new JsonParsers();
         registerHandlers();
     }
 
@@ -19,14 +17,14 @@ public class MessageDispatcher {
      * Register all basic protocol handlers
      */
     private void registerHandlers() {
-        handlers.put("HI", json -> new HiCommand(json).print());
-        handlers.put("BROADCAST", json -> new BroadcastCommand(json).print());
-        handlers.put("LEFT", json -> new LeftCommand(json).print());
-        handlers.put("LOGON_RESP", jsonParsers::parseStatusResponse);
-        handlers.put("BROADCAST_RESP", jsonParsers::parseStatusResponse);
-        handlers.put("BYE_RESP", jsonParsers::parseStatusResponse);
-        handlers.put("HANGUP", json -> new HangupCommand(json).print());
-        handlers.put("PONG_ERROR", jsonParsers::parseStatusResponse);
+        handlers.put("HI", json -> new HiMessage(json).print());
+        handlers.put("BROADCAST", json -> new BroadcastMessage(json).print());
+        handlers.put("LEFT", json -> new LeftMessage(json).print());
+        handlers.put("LOGON_RESP", json -> new StatusMessage(json).print());
+        handlers.put("BROADCAST_RESP", json -> new StatusMessage(json).print());
+        handlers.put("BYE_RESP", json -> new StatusMessage(json).print());
+        handlers.put("HANGUP", json -> new HangupMessage(json).print());
+        handlers.put("PONG_ERROR", json -> new StatusMessage(json).print());
     }
 
     /**

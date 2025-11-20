@@ -1,14 +1,14 @@
-package client.protocols.commands;
+package client.protocols.messages;
 
-import client.protocols.Command;
+import client.protocols.Message;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class HiCommand implements Command {
+public class HiMessage implements Message {
     private final String version;
 
-    public HiCommand(String jsonBody) {
+    public HiMessage(String jsonBody) {
         ArrayList<String> jsonValues = new ArrayList<>();
         jsonValues.add("version");
 
