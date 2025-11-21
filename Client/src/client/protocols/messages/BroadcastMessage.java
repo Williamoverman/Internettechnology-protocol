@@ -1,26 +1,21 @@
 package client.protocols.messages;
 
-import client.protocols.Message;
+import client.protocols.MessageHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class BroadcastMessage implements Message {
-    private final String username;
-    private final String message;
-
-    public BroadcastMessage(String jsonBody) {
+public class BroadcastMessage implements MessageHandler {
+    @Override
+    public void handle(String jsonBody) {
         ArrayList<String> jsonValues = new ArrayList<>();
         jsonValues.add("username");
         jsonValues.add("message");
 
         HashMap<String, String> parsedValues = jsonParser.genericParser(jsonValues, jsonBody);
-        this.username = parsedValues.get("username");
-        this.message = parsedValues.get("message");
-    }
+        String username = parsedValues.get("username");
+        String message = parsedValues.get("message");
 
-    @Override
-    public void print() {
         System.out.println("[BROADCAST] <" + username + ">: " + message);
     }
 }

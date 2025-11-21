@@ -1,16 +1,12 @@
 package client.protocols.messages;
 
-import client.protocols.Message;
+import client.protocols.MessageHandler;
 
-public class StatusMessage implements Message {
-    private final String code;
-
-    public StatusMessage(String jsonBody) {
-        this.code = jsonParser.parseStatusResponse(jsonBody);
-    }
-
+public class StatusMessage implements MessageHandler {
     @Override
-    public void print() {
+    public void handle(String jsonBody) {
+        String code = jsonParser.parseStatusResponse(jsonBody);
+
         System.out.println(code);
     }
 }

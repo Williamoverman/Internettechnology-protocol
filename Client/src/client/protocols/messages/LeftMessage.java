@@ -1,23 +1,19 @@
 package client.protocols.messages;
 
-import client.protocols.Message;
+import client.protocols.MessageHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class LeftMessage implements Message {
-    private final String username;
-
-    public LeftMessage(String jsonBody) {
+public class LeftMessage implements MessageHandler {
+    @Override
+    public void handle(String jsonBody) {
         ArrayList<String> jsonValues = new ArrayList<>();
         jsonValues.add("username");
 
         HashMap<String, String> parsedValues = jsonParser.genericParser(jsonValues, jsonBody);
-        this.username = parsedValues.get("username");
-    }
+        String username = parsedValues.get("username");
 
-    @Override
-    public void print() {
         System.out.println("[LEFT] <" + username + ">");
     }
 }

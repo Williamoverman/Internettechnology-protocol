@@ -1,30 +1,29 @@
 package client.handlers;
 
-import client.protocols.ServerMessageHandler;
+import client.protocols.MessageHandler;
 import client.protocols.messages.*;
-import client.utils.JsonParsers;
 
 import java.util.HashMap;
 
 public class MessageDispatcher {
-    private final HashMap<String, ServerMessageHandler> handlers = new HashMap<>();
+    private final HashMap<String, MessageHandler> handlers = new HashMap<>();
 
     public MessageDispatcher() {
         registerHandlers();
     }
 
     /**
-     * Register all basic protocol handlers
+     * Register all basic protocol message receiver handlers
      */
     private void registerHandlers() {
-        handlers.put("HI", json -> new HiMessage(json).print());
-        handlers.put("BROADCAST", json -> new BroadcastMessage(json).print());
-        handlers.put("LEFT", json -> new LeftMessage(json).print());
-        handlers.put("LOGON_RESP", json -> new StatusMessage(json).print());
-        handlers.put("BROADCAST_RESP", json -> new StatusMessage(json).print());
-        handlers.put("BYE_RESP", json -> new StatusMessage(json).print());
-        handlers.put("HANGUP", json -> new HangupMessage(json).print());
-        handlers.put("PONG_ERROR", json -> new StatusMessage(json).print());
+        handlers.put("HI", new HiMessage());
+        handlers.put("BROADCAST", new BroadcastMessage());
+        handlers.put("LEFT", new LeftMessage());
+        handlers.put("LOGON_RESP", new StatusMessage());
+        handlers.put("BROADCAST_RESP", new StatusMessage());
+        handlers.put("BYE_RESP", new StatusMessage());
+        handlers.put("HANGUP", new HangupMessage());
+        handlers.put("PONG_ERROR", new StatusMessage());
     }
 
     /**
@@ -33,14 +32,15 @@ public class MessageDispatcher {
      * @param jsonBody body to parse/handle
      */
     public void dispatch(String header, String jsonBody) {
-        ServerMessageHandler handler = handlers.get(header);
-        handler.handle(jsonBody);
+        MessageHandler handler = handlers.get(header);
+        if (handler != null)
+            handler.handle(jsonBody);
     }
 
     /**
      * register new handler
      */
-    public void register(String header, ServerMessageHandler handler) {
+    public void register(String header, MessageHandler handler) {
         handlers.put(header, handler);
     }
 }

@@ -1,23 +1,19 @@
 package client.protocols.messages;
 
-import client.protocols.Message;
+import client.protocols.MessageHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class HangupMessage implements Message {
-    private final String reason;
-
-    public HangupMessage(String jsonBody) {
+public class HangupMessage implements MessageHandler {
+    @Override
+    public void handle(String jsonBody) {
         ArrayList<String> jsonValues = new ArrayList<>();
         jsonValues.add("reason");
 
         HashMap<String, String> parsedValues = jsonParser.genericParser(jsonValues, jsonBody);
-        this.reason = parsedValues.get("reason");
-    }
+        String reason = parsedValues.get("reason");
 
-    @Override
-    public void print() {
         System.out.println("[HANGUP] " + reason);
     }
 }
