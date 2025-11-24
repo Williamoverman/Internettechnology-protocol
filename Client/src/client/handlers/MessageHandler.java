@@ -1,6 +1,7 @@
 package client.handlers;
 
 import client.connection.ServerConnection;
+import client.dispatchers.MessageDispatcher;
 
 public class MessageHandler {
     private final ServerConnection connection;

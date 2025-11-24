@@ -1,5 +1,6 @@
 package client.handlers;
 
+import client.dispatchers.InputDispatcher;
 import client.senders.CommandSender;
 
 import java.util.Scanner;

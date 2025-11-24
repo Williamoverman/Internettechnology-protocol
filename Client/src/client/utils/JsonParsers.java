@@ -54,8 +54,8 @@ public class JsonParsers {
         HashMap<String, String> parsedValues = new HashMap<>();
 
         try {
+            JsonNode jsonNode = mapper.readTree(jsonBody);
             for (String value : valuesToParse) {
-                JsonNode jsonNode = mapper.readTree(jsonBody);
                 if (jsonNode.has(value))
                     parsedValues.put(value, jsonNode.get(value).asText());
             }
