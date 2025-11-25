@@ -209,20 +209,26 @@ Example:
 - C2 = Speler B
 
 ```
-C1 -> S: TOH_GAME {"username":"<username>"}
+C1 -> S: TOH_GAME {"opponent":"<username>"}  // Invite
 S -> C1: TOH_GAME_RESP {"status":"OK"}
 
-S -> C2: TOH_GAME {"message":"Spel is gestart"}
+S -> C2: TOH_GAME {"type":"invite", "from":"<username>", "message":"Game invitation from <username>. Reply with TOH_GAME {"choice":"heads"} or {"choice":"tails"} to accept."}
 
-C1 -> S: TOH_GAME {"choice":"heads"}
-C2 -> S: TOH_GAME {"choice":"tails"}
+C2 -> S: TOH_GAME {"choice":"tails"}  // Accept + choice
+S -> C1: TOH_GAME {"type":"accepted", "message":"Opponent accepted. Make your choice."}
+S -> C2: TOH_GAME {"type":"accepted", "message":"Game started. Your choice: tails"}
 
-S -> C1: TOH_GAME {"message":"Result: heads, C1 +1 Score"}
-S -> C2: TOH_GAME {"message":"Result: heads, C1 +1 Score"}
+C1 -> S: TOH_GAME {"choice":"heads"}  // Round 1
+// Server tosses coin (random: heads/tails)
+S -> C1: TOH_GAME {"type":"result", "round":1, "coin":"heads", "winner":"C1", "score":{"C1":1,"C2":0}, "message":"Result: heads. You win the point (+1)."}
+S -> C2: TOH_GAME {"type":"result", "round":1, "coin":"heads", "winner":"C1", "score":{"C1":1,"C2":0}, "message":"Result: heads. Opponent wins the point."}
 
-(After 3 iterations)
-S -> C1: TOH_GAME {"message":"You have won"}
-S -> C2: TOH_GAME {"message":"You have lost"}
+// Bij tie (beide heads): S -> both: TOH_GAME {"type":"tie", "message":"Tie! Make another choice."}
+// Bij mismatch: Server tosses en kent punt toe.
+
+// Na 3 punten voor één speler (variabel aantal rounds):
+S -> C1: TOH_GAME {"type":"end", "message":"You won the game!"}
+S -> C2: TOH_GAME {"type":"end", "message":"You lost the game."}
 ```
 
 ## 9.2 Unhappy flow
