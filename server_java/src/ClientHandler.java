@@ -11,6 +11,8 @@ public class ClientHandler implements Runnable {
     public ClientHandler(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
         this.clientConnection = new ClientConnection(clientSocket);
+        this.commandHandler = new CommandHandler();
+        this.commandListener = new CommandListener(clientConnection, commandHandler);
     }
 
     @Override

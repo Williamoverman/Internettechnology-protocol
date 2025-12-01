@@ -1,7 +1,6 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class ClientConnection {
     private Socket clientSocket;
@@ -22,12 +21,20 @@ public class ClientConnection {
         if (clientSocket != null) clientSocket.close();
     }
 
-    public void sendMessage() {
-
+    public void sendMessage(String message) throws IOException {
+        if (connected && output != null) {
+            output.write(message.getBytes(StandardCharsets.UTF_8));
+            output.flush();
+        }
     }
 
     public String readCommand() throws IOException {
         if (connected && input != null)
-            return input.readAllBytes();
+            return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+        return null;
+    }
+
+    public boolean isConnected() {
+        return connected && clientSocket != null && !clientSocket.isClosed();
     }
 }
