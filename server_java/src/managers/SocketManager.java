@@ -1,3 +1,8 @@
+package managers;
+
+import handlers.ClientHandler;
+import utils.Config;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -12,7 +17,8 @@ public class SocketManager {
     public void setup() throws IOException {
         serverSocket = new ServerSocket(Config.SERVER_PORT);
         running = true;
-        executor = Executors.newFixedThreadPool(40);
+        executor = Executors.newFixedThreadPool(5);
+        System.out.println("Server running, listening...");
 
         while (running) {
             try {

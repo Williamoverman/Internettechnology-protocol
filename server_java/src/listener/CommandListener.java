@@ -1,3 +1,8 @@
+package listener;
+
+import connection.ClientConnection;
+import handlers.CommandHandler;
+
 import java.io.IOException;
 
 public class CommandListener implements Runnable {
@@ -15,10 +20,11 @@ public class CommandListener implements Runnable {
     public void run() {
         try {
             while (running && connection.isConnected()) {
-                String message = connection.readCommand();
-                if (message == null)
+                String command = connection.readCommand();
+                System.out.println(command);
+                if (command == null)
                     break;
-                handler.handleCommand(message);
+                handler.handleCommand(command);
             }
         } catch (IOException e) {
             if (running)
