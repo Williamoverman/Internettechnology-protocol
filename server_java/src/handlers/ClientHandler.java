@@ -33,15 +33,15 @@ public class ClientHandler implements Runnable {
     private void initialize() throws IOException {
         clientConnection = new ClientConnection(clientSocket);
         MessageSender sender = new MessageSender(clientConnection);
-
         HeartbeatManager heartBeatManager = new HeartbeatManager(clientConnection, sender);
 
-        CommandDispatcher dispatcher = new CommandDispatcher(sender, heartBeatManager);
+        CommandDispatcher dispatcher = new CommandDispatcher(sender, heartBeatManager, clientConnection);
         CommandHandler commandHandler = new CommandHandler(dispatcher);
-        commandListener = new CommandListener(clientConnection, commandHandler);
 
-        commandListener.run();
         sender.sendWelcome();
+
+        commandListener = new CommandListener(clientConnection, commandHandler);
+        commandListener.run();
     }
 
     private void disconnect() {

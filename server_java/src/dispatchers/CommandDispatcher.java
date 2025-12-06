@@ -2,24 +2,27 @@ package dispatchers;
 
 import java.util.HashMap;
 
+import connection.ClientConnection;
 import managers.HeartbeatManager;
 import protocol.ICommandHandler;
 import protocol.commands.*;
 import sender.MessageSender;
 
 public class CommandDispatcher {
-    private HashMap<String, ICommandHandler> commands = new HashMap<>();
-    private MessageSender sender;
-    private HeartbeatManager manager;
+    private final HashMap<String, ICommandHandler> commands = new HashMap<>();
+    private final MessageSender sender;
+    private final HeartbeatManager manager;
+    private final ClientConnection connection;
 
-    public CommandDispatcher(MessageSender sender, HeartbeatManager manager) {
-        registerHandlers();
+    public CommandDispatcher(MessageSender sender, HeartbeatManager manager, ClientConnection connection) {
         this.sender = sender;
         this.manager = manager;
+        this.connection = connection;
+        registerHandlers();
     }
 
     private void registerHandlers() {
-        commands.put("LOGON", new LogonCommand(sender, manager));
+        commands.put("LOGON", new LogonCommand(sender, manager, connection));
         commands.put("BROADCAST_REQ", new BroadcastCommand(sender));
         commands.put("BYE", new ByeCommand(sender));
         commands.put("ONLINE_REQ", new OnlineCommand(sender));

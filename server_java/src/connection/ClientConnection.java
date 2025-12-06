@@ -13,20 +13,20 @@ public class ClientConnection {
     public ClientConnection(Socket clientSocket) throws IOException {
         this.clientSocket = clientSocket;
         this.reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
-        this.writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true); // autoFlush
+        this.writer = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true);
         this.connected = true;
     }
 
     public String readCommand() throws IOException {
         String line = reader.readLine();
-        if (line == null) connected = false;
+        if (line == null)
+            connected = false;
         return line;
     }
 
     public void sendMessage(String message) {
-        if (connected && writer != null) {
+        if (connected && writer != null)
             writer.println(message);
-        }
     }
 
     public boolean isConnected() {
@@ -35,8 +35,12 @@ public class ClientConnection {
 
     public void exit() {
         connected = false;
-        try { reader.close(); } catch (Exception e) {}
-        try { writer.close(); } catch (Exception e) {}
-        try { clientSocket.close(); } catch (Exception e) {}
+        try {
+            reader.close();
+            writer.close();
+            clientSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

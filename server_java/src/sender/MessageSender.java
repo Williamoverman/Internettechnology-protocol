@@ -8,14 +8,13 @@ import java.util.Map;
 
 public class MessageSender {
     private final ClientConnection connection;
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
 
     public MessageSender(ClientConnection connection) {
         this.connection = connection;
     }
 
     public void ping() {
-        System.out.println("Sending Ping...");
         connection.sendMessage("PING");
     }
 
@@ -24,21 +23,26 @@ public class MessageSender {
     }
 
     public void sendWelcome() {
-        connection.sendMessage("HI {\"version\":\"1.0.0\"}\n");
+        Map<String, String> welcomeData = new HashMap<>();
+        welcomeData.put("version", "1.0.0");
+        String json = gson.toJson(welcomeData);
+        connection.sendMessage("HI " + json);
     }
 
-    public void sendError(String response, int code) {
-        Map<String, Object> error = new HashMap<>();
-        error.put("status", "ERROR");
-        error.put("code", code);
-        String json = gson.toJson(error);
-        connection.sendMessage(response + " " + json);
+    public void sendOK(String header) {
+        sendResponse(header, "OK", null);
     }
 
-    public void sendOK(String response) {
-        Map<String, String> ok = new HashMap<>();
-        ok.put("status", "OK");
-        String json = gson.toJson(ok);
-        connection.sendMessage(response + " " + json);
+    public void sendError(String header, int code) {
+        sendResponse(header, "ERROR", code);
+    }
+
+    public void sendResponse(String header, String status, Integer code) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", status);
+        if (code != null)
+            response.put("code", code);
+        String json = gson.toJson(response);
+        connection.sendMessage(header + " " + json);
     }
 }

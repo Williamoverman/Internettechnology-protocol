@@ -34,6 +34,7 @@ public class SocketManager {
     public void stop() {
         running = false;
         try {
+            System.out.println("Closing server...");
             if (serverSocket != null && !serverSocket.isClosed())
                 serverSocket.close();
 

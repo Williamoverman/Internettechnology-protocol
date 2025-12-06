@@ -24,6 +24,7 @@ public class MessageDispatcher {
         handlers.put("BYE_RESP", new StatusMessage());
         handlers.put("HANGUP", new HangupMessage());
         handlers.put("PONG_ERROR", new StatusMessage());
+        handlers.put("JOINED", new JoinedMessage());
     }
 
     /**

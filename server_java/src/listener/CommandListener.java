@@ -21,7 +21,6 @@ public class CommandListener implements Runnable {
         try {
             while (running && connection.isConnected()) {
                 String command = connection.readCommand();
-                System.out.println(command);
                 if (command == null)
                     break;
                 handler.handleCommand(command);

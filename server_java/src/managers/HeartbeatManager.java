@@ -24,12 +24,14 @@ public class HeartbeatManager {
         long gracePeriod = System.currentTimeMillis() + 15000;
 
         try {
+            Thread.sleep(5000);
+
             while (connection.isConnected()) {
                 sender.ping();
 
                 long now = System.currentTimeMillis();
 
-                if (now > gracePeriod && now - lastPongTime > TIMEOUT) {
+                if (now > gracePeriod && now - lastPongTime > (PING_INTERVAL + TIMEOUT)) {
                     System.out.println("Client timeout - no PONG received");
                     connection.exit();
                     break;
