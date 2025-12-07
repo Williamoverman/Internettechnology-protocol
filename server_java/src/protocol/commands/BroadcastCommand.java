@@ -1,11 +1,36 @@
 package protocol.commands;
 
+import com.google.gson.JsonSyntaxException;
+import connection.ClientConnection;
+import managers.UserRegistry;
 import protocol.ICommandHandler;
-import sender.MessageSender;
+import protocol.MessageFormatter;
+import requests.BroadcastRequest;
+import protocol.ClientMessenger;
 
-public record BroadcastCommand(MessageSender sender) implements ICommandHandler {
+public record BroadcastCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
+        try {
+            UserRegistry registry = UserRegistry.getInstance();
 
+            if (!registry.isLoggedIn(connection)) {
+                messenger.sendError("BROADCAST_RESP", 6000);
+                return;
+            }
+
+            BroadcastRequest request = gson.fromJson(jsonBody, BroadcastRequest.class);
+            String message = request.message();
+            if (message == null || message.isEmpty())
+                return;
+
+            String username = registry.getUsername(connection);
+
+            messenger.sendOK("BROADCAST_RESP");
+            String broadcastMessage = MessageFormatter.createBroadcast(username, message);
+            ClientMessenger.broadcast(registry.getAllExcept(username), broadcastMessage);
+        } catch (JsonSyntaxException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 }

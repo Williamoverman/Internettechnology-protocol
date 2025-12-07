@@ -1,9 +1,9 @@
 package protocol.commands;
 
 import protocol.ICommandHandler;
-import sender.MessageSender;
+import protocol.ClientMessenger;
 
-public record ByeCommand(MessageSender sender) implements ICommandHandler {
+public record ByeCommand(ClientMessenger sender) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
 

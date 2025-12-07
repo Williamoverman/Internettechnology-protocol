@@ -1,19 +1,19 @@
 package managers;
 
 import connection.ClientConnection;
-import sender.MessageSender;
+import protocol.ClientMessenger;
 
 public class HeartbeatManager {
     private final ClientConnection connection;
-    private final MessageSender sender;
+    private final ClientMessenger messenger;
 
     private static final long PING_INTERVAL = 10000;
     private static final long TIMEOUT = 3000;
     private volatile long lastPongTime = System.currentTimeMillis();
 
-    public HeartbeatManager(ClientConnection connection, MessageSender sender) {
+    public HeartbeatManager(ClientConnection connection, ClientMessenger messenger) {
         this.connection = connection;
-        this.sender = sender;
+        this.messenger = messenger;
     }
 
     public void notifyPong() {
@@ -27,7 +27,7 @@ public class HeartbeatManager {
             Thread.sleep(5000);
 
             while (connection.isConnected()) {
-                sender.ping();
+                messenger.sendPing();
 
                 long now = System.currentTimeMillis();
 

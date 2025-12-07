@@ -1,9 +1,9 @@
 package protocol.commands;
 
 import protocol.ICommandHandler;
-import sender.MessageSender;
+import protocol.ClientMessenger;
 
-public record DmCommand(MessageSender sender) implements ICommandHandler {
+public record DmCommand(ClientMessenger sender) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
 
