@@ -49,4 +49,10 @@ public class MessageFormatter {
         data.put("username", username);
         return "JOINED " + gson.toJson(data);
     }
+
+    public static String createLeft(String username) {
+        Map<String, String> data = new HashMap<>();
+        data.put("username", username);
+        return "LEFT " + gson.toJson(data);
+    }
 }

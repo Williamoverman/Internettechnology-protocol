@@ -70,6 +70,16 @@ public class ClientMessenger {
     }
 
     /**
+     * Sends LEFT notif to multiple clients
+     * @param connections list of connectedd clients
+     * @param username the username that left
+     */
+    public static void broadcastLeft(List<ClientConnection> connections, String username) {
+        String message = MessageFormatter.createLeft(username);
+        broadcast(connections, message);
+    }
+
+    /**
      * Sends a message to a single specific connection
      * @param connection the target connection
      * @param message the formatted message to send

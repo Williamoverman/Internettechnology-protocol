@@ -24,7 +24,7 @@ public class CommandDispatcher {
     private void registerHandlers() {
         commands.put("LOGON", new LogonCommand(messenger, manager, connection));
         commands.put("BROADCAST_REQ", new BroadcastCommand(messenger, connection));
-        commands.put("BYE", new ByeCommand(messenger));
+        commands.put("BYE", new ByeCommand(messenger, connection));
         commands.put("ONLINE_REQ", new OnlineCommand(messenger));
         commands.put("DM_REQ", new DmCommand(messenger));
         commands.put("TOH_GAME", new ToHCommand(messenger));

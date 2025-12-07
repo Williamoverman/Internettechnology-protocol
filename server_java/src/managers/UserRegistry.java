@@ -75,12 +75,21 @@ public class UserRegistry {
     }
 
     /**
-     * Get username for connection
+     * Get username from connection
      * @param connection the connection
      * @return username
      */
     public String getUsername(ClientConnection connection) {
         return connections.get(connection);
+    }
+
+    /**
+     * get connection from username
+     * @param username the username to look up
+     * @return the connection associated with this username
+     */
+    public ClientConnection getConnection(String username) {
+        return users.get(username);
     }
 
     /**

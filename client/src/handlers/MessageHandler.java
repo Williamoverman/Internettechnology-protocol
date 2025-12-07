@@ -19,7 +19,7 @@ public class MessageHandler {
     public void handleMessage(String message) {
         if (message == null)
             return;
-        System.out.println("Message received: " + message);
+
         String trimmedMessage = message.trim();
 
         if (trimmedMessage.equalsIgnoreCase("ping")) {
