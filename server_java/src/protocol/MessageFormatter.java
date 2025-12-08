@@ -62,4 +62,11 @@ public class MessageFormatter {
         data.put("usernames", users);
         return "ONLINE " + gson.toJson(data);
     }
+
+    public static String createDm(String username, String message) {
+        Map<String, String> data = new HashMap<>();
+        data.put("username", username);
+        data.put("message", message);
+        return "DM " + gson.toJson(data);
+    }
 }

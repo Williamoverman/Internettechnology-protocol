@@ -24,6 +24,7 @@ public class InputDispatcher {
         handlers.put("login", new LoginCommand(sender));
         handlers.put("broadcast", new BroadcastCommand(sender));
         handlers.put("online", new OnlineCommand(sender));
+        handlers.put("dm", new DmCommand(sender));
     }
 
     /**

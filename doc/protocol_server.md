@@ -79,9 +79,9 @@ S -> C: BROADCAST_RESP {"status": "ERROR", "code": <error code>}
 ```
 Possible `<error code>`:
 
-| Error code | Description            |
-|------------|------------------------|
-| 6000       | User is not logged in  |
+| Error code | Description              |
+|------------|--------------------------|
+| 67         | You need to be logged in |
 
 # 3. Heartbeat message
 
@@ -196,6 +196,7 @@ Possible `<error code>`:
 |------------|----------------------|
 | 9000       | User does not exist  |
 | 9001       | Cannot DM yourself   |
+| 67         | Need to be logged in |
 
 ## 9. Tails or Heads game
 

@@ -15,10 +15,10 @@ public class StatusMessage implements MessageHandler {
                 System.out.println("[OK]");
             } else if (response.code() != null) {
                 String desc = switch (response.code()) {
+                    case 67 -> "You need to be logged";
                     case 5000 -> "User with this name already exists";
                     case 5001 -> "Username has an invalid format or length";
                     case 5002 -> "Already logged in";
-                    case 6000 -> "You need to be logged in to broadcast messages";
                     case 8000 -> "Pong without ping";
                     case 9000 -> "User does not exist";
                     case 9001 -> "Cannot DM yourself";

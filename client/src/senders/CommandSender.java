@@ -26,4 +26,6 @@ public class CommandSender {
     }
 
     public void online() { sendCommand("ONLINE_REQ"); }
+
+    public void dm(String message) { sendCommand("DM_REQ " + message); }
 }

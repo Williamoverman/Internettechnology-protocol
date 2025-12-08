@@ -12,7 +12,7 @@ public record BroadcastCommand(ClientMessenger messenger, ClientConnection conne
     public void process(String jsonBody) {
         try {
             if (!registry.isLoggedIn(connection)) {
-                messenger.sendError("BROADCAST_RESP", 6000);
+                messenger.sendError("BROADCAST_RESP", 67);
                 return;
             }
 

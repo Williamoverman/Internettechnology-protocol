@@ -102,21 +102,6 @@ public class UserRegistry {
     }
 
     /**
-     * Notify all users except one
-     * @param username username to exclude
-     */
-    public void notifyAllJoined(String username) {
-        Gson gson = new Gson();
-        JsonObject json = new JsonObject();
-        json.addProperty("username", username);
-        String message = "JOINED " + gson.toJson(json);
-
-        getAllExcept(username).forEach(conn ->
-                conn.sendMessage(message)
-        );
-    }
-
-    /**
      * Get all usernames
      * @return list of all usernames
      */
