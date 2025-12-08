@@ -1,5 +1,8 @@
 package connection;
 
+import managers.UserRegistry;
+import protocol.ClientMessenger;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -35,6 +38,14 @@ public class ClientConnection {
 
     public void exit() {
         connected = false;
+
+        UserRegistry userRegistry = UserRegistry.getInstance();
+        String username = userRegistry.getUsername(this);
+        if (username != null)
+            ClientMessenger.broadcastLeft(userRegistry.getAllExcept(username), username);
+
+        userRegistry.removeConnection(this);
+
         try {
             reader.close();
             writer.close();

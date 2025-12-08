@@ -1,19 +1,18 @@
 package protocols.messages;
 
 import protocols.MessageHandler;
+import responses.JoinedResponse;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.IOException;
 
 public class JoinedMessage implements MessageHandler {
     @Override
     public void handle(String jsonBody) {
-        ArrayList<String> jsonValues = new ArrayList<>();
-        jsonValues.add("username");
-
-        HashMap<String, String> parsedValues = jsonParser.genericParser(jsonValues, jsonBody);
-        String username = parsedValues.get("username");
-
-        System.out.println("[JOINED] <" + username + ">");
+        try {
+            JoinedResponse response = mapper.readValue(jsonBody, JoinedResponse.class);
+            System.out.println("[JOINED] <" + response.username() + ">");
+        } catch (IOException e) {
+            System.err.println("Failed to parse joined: " + e.getMessage());
+        }
     }
 }

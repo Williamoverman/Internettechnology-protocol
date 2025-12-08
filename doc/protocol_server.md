@@ -166,7 +166,7 @@ The client asks for a list consisting of all existing clients connected to the s
 Example:
 ```
 C -> S: ONLINE_REQ
-S -> C: ONLINE {"username":"<username>","username":"<username>"...}   
+S -> C: ONLINE {"usernames":["name1","name2","name3"]}
 ```
 
 # 8. Private messages between 2 clients, receiving and sending.

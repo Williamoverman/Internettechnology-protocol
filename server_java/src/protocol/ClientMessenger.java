@@ -12,6 +12,8 @@ public class ClientMessenger {
         this.connection = connection;
     }
 
+    // broadcast to single user client
+
     /**
      * send wlcome to client
      */
@@ -24,6 +26,10 @@ public class ClientMessenger {
      */
     public void sendPing() {
         connection.sendMessage(MessageFormatter.createPing());
+    }
+
+    public void sendOnline(List<String> users) {
+        connection.sendMessage(MessageFormatter.createOnline(users));
     }
 
     /**
@@ -49,6 +55,8 @@ public class ClientMessenger {
     public void sendError(String header, int code) {
         connection.sendMessage(MessageFormatter.createErrorResponse(header, code));
     }
+
+    // broadcast to multiple clients
 
     /**
      * Broadcasts a message to multiple clients

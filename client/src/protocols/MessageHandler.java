@@ -1,10 +1,9 @@
 package protocols;
 
-import utils.JsonParsers;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface MessageHandler {
-    // messages from the server need to be parsed
-    JsonParsers jsonParser = new JsonParsers();
+    ObjectMapper mapper = new ObjectMapper();
 
     /**
      * print function to display message from server to readable text for the user

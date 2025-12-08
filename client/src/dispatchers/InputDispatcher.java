@@ -23,6 +23,7 @@ public class InputDispatcher {
         handlers.put("help", new HelpCommand());
         handlers.put("login", new LoginCommand(sender));
         handlers.put("broadcast", new BroadcastCommand(sender));
+        handlers.put("online", new OnlineCommand(sender));
     }
 
     /**

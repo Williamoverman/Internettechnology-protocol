@@ -25,6 +25,7 @@ public class MessageDispatcher {
         handlers.put("HANGUP", new HangupMessage());
         handlers.put("PONG_ERROR", new StatusMessage());
         handlers.put("JOINED", new JoinedMessage());
+        handlers.put("ONLINE", new OnlineMessage());
     }
 
     /**

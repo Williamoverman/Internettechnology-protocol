@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+// found a better way than just this weird generic parser i made lol
+@Deprecated
 public class JsonParsers {
     private final ObjectMapper mapper;
 

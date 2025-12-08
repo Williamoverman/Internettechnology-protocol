@@ -1,19 +1,18 @@
 package protocols.messages;
 
 import protocols.MessageHandler;
+import responses.LeftResponse;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.IOException;
 
 public class LeftMessage implements MessageHandler {
     @Override
     public void handle(String jsonBody) {
-        ArrayList<String> jsonValues = new ArrayList<>();
-        jsonValues.add("username");
-
-        HashMap<String, String> parsedValues = jsonParser.genericParser(jsonValues, jsonBody);
-        String username = parsedValues.get("username");
-
-        System.out.println("[LEFT] <" + username + ">");
+        try {
+            LeftResponse response = mapper.readValue(jsonBody, LeftResponse.class);
+            System.out.println("[LEFT] <" + response.username() + ">");
+        } catch (IOException e) {
+            System.err.println("Failed to parse left: " + e.getMessage());
+        }
     }
 }

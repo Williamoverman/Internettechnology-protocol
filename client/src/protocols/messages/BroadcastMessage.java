@@ -1,21 +1,18 @@
 package protocols.messages;
 
 import protocols.MessageHandler;
+import responses.BroadcastResponse;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.IOException;
 
 public class BroadcastMessage implements MessageHandler {
     @Override
     public void handle(String jsonBody) {
-        ArrayList<String> jsonValues = new ArrayList<>();
-        jsonValues.add("username");
-        jsonValues.add("message");
-
-        HashMap<String, String> parsedValues = jsonParser.genericParser(jsonValues, jsonBody);
-        String username = parsedValues.get("username");
-        String message = parsedValues.get("message");
-
-        System.out.println("[BROADCAST] <" + username + ">: " + message);
+        try {
+            BroadcastResponse response = mapper.readValue(jsonBody, BroadcastResponse.class);
+            System.out.println("[BROADCAST] <" + response.username() + ">: " + response.message());
+        } catch (IOException e) {
+            System.err.println("Failed to parse broadcast: " + e.getMessage());
+        }
     }
 }

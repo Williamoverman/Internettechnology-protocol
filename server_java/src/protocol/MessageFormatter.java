@@ -2,6 +2,7 @@ package protocol;
 
 import com.google.gson.Gson;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MessageFormatter {
@@ -54,5 +55,11 @@ public class MessageFormatter {
         Map<String, String> data = new HashMap<>();
         data.put("username", username);
         return "LEFT " + gson.toJson(data);
+    }
+
+    public static String createOnline(List<String> users) {
+        Map<String, List<String>> data = new HashMap<>();
+        data.put("usernames", users);
+        return "ONLINE " + gson.toJson(data);
     }
 }

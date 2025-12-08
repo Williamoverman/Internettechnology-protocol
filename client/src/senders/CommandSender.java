@@ -24,4 +24,6 @@ public class CommandSender {
     public void quit() {
         sendCommand("BYE");
     }
+
+    public void online() { sendCommand("ONLINE_REQ"); }
 }

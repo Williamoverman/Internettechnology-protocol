@@ -3,7 +3,6 @@ package protocol.commands;
 import com.google.gson.JsonSyntaxException;
 import connection.ClientConnection;
 import managers.HeartbeatManager;
-import managers.UserRegistry;
 import protocol.ICommandHandler;
 import requests.LogonRequest;
 import protocol.ClientMessenger;
@@ -18,8 +17,6 @@ public record LogonCommand(ClientMessenger messenger, HeartbeatManager manager, 
                 messenger.sendError("LOGON_RESP", 5001);
                 return;
             }
-
-            UserRegistry registry = UserRegistry.getInstance();
 
             if (registry.isLoggedIn(connection)) {
                 messenger.sendError("LOGON_RESP", 5002);

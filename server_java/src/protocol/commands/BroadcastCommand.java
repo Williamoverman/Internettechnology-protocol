@@ -2,7 +2,6 @@ package protocol.commands;
 
 import com.google.gson.JsonSyntaxException;
 import connection.ClientConnection;
-import managers.UserRegistry;
 import protocol.ICommandHandler;
 import protocol.MessageFormatter;
 import requests.BroadcastRequest;
@@ -12,8 +11,6 @@ public record BroadcastCommand(ClientMessenger messenger, ClientConnection conne
     @Override
     public void process(String jsonBody) {
         try {
-            UserRegistry registry = UserRegistry.getInstance();
-
             if (!registry.isLoggedIn(connection)) {
                 messenger.sendError("BROADCAST_RESP", 6000);
                 return;
