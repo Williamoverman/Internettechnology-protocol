@@ -27,7 +27,7 @@ public class CommandDispatcher {
         commands.put("BYE", new ByeCommand(messenger, connection));
         commands.put("ONLINE_REQ", new OnlineCommand(messenger));
         commands.put("DM_REQ", new DmCommand(messenger, connection));
-        commands.put("TOH_GAME", new ToHCommand(messenger));
+        commands.put("TOH_GAME", new ToHCommand(messenger, connection));
         commands.put("PONG", new PongCommand(manager));
     }
 

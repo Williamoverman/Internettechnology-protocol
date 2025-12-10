@@ -1,7 +1,5 @@
 package managers;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import connection.ClientConnection;
 
 import java.util.List;

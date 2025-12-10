@@ -240,7 +240,10 @@ S -> C: TOH_GAME_RESP {"status": "ERROR", "code": <error code>}
 ```
 Possible `<error code>`:
 
-| Error code  | Description                              |
-|-------------|------------------------------------------|
-| 10000       | User does not exist                      |
-| 10001       | Cannot play heads or tails with yourself |
+| Error code  | Description                                            |
+|-------------|--------------------------------------------------------|
+| 10000       | User does not exist                                    |
+| 10001       | Cannot play heads or tails with yourself               |
+| 10002       | Cannot play game with someone who is already in a game |
+| 10003       | User already has a pending invite                      |
+| 10004       | Invalid choice                                         |

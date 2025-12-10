@@ -69,4 +69,11 @@ public class MessageFormatter {
         data.put("message", message);
         return "DM " + gson.toJson(data);
     }
+
+    public static String createInvite(String username) {
+        Map<String, String> data = new HashMap<>();
+        data.put("type", "invite");
+        data.put("from", username);
+        return "TOH_GAME " + data;
+    }
 }
