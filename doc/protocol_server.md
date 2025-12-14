@@ -204,33 +204,69 @@ Two clients can play a Tails or Heads game with each other using the server.
 
 ## 9.1 Happy flow
 
-Example:
+## Invite
 
-- C1 = Speler A
-- C2 = Speler B
+```text
+C1 -> S: TOH_INVITE {"opponent":"<username>"}
+S  -> C1: TOH_RESP   {"status":"OK"}
 
+S  -> C2: TOH_INVITE {"from":"<username>"}
 ```
-C1 -> S: TOH_GAME {"opponent":"<username>"}  // Invite
-S -> C1: TOH_GAME_RESP {"status":"OK"}
 
-S -> C2: TOH_GAME {"type":"invite", "from":"<username>", "message":"Game invitation from <username>. Reply with TOH_GAME {"choice":"heads"} or {"choice":"tails"} to accept."}
+## Accept / Decline
 
-C2 -> S: TOH_GAME {"choice":"tails"}  // Accept + choice
-S -> C1: TOH_GAME {"type":"accepted", "message":"Opponent accepted. Make your choice."}
-S -> C2: TOH_GAME {"type":"accepted", "message":"Game started. Your choice: tails"}
+### Accept
 
-C1 -> S: TOH_GAME {"choice":"heads"}  // Round 1
-// Server tosses coin (random: heads/tails)
-S -> C1: TOH_GAME {"type":"result", "round":1, "coin":"heads", "winner":"C1", "score":{"C1":1,"C2":0}, "message":"Result: heads. You win the point (+1)."}
-S -> C2: TOH_GAME {"type":"result", "round":1, "coin":"heads", "winner":"C1", "score":{"C1":1,"C2":0}, "message":"Result: heads. Opponent wins the point."}
+```text
+C2 -> S: TOH_ACCEPT {}
 
-// Bij tie (beide heads): S -> both: TOH_GAME {"type":"tie", "message":"Tie! Make another choice."}
-// Bij mismatch: Server tosses en kent punt toe.
-
-// Na 3 punten voor één speler (variabel aantal rounds):
-S -> C1: TOH_GAME {"type":"end", "message":"You won the game!"}
-S -> C2: TOH_GAME {"type":"end", "message":"You lost the game."}
+S  -> C1: TOH_START {"opponent":"<opponent_username>", "round":1}
+S  -> C2: TOH_START {"opponent":"<opponent_username>", "round":1}
 ```
+
+### Decline (optioneel)
+
+```text
+C2 -> S: TOH_DECLINE {}
+S  -> C1: TOH_DECLINED {"from":"<opponent_username>"}
+```
+
+## Choices (per round / tie)
+
+```text
+C -> S: TOH_CHOICE {"choice":"heads" | "tails"}
+```
+
+Server wacht tot beide keuzes binnen zijn.
+
+## Resultaat
+
+### Tie (beide dezelfde keuze)
+
+```text
+S -> C1,C2: TOH_TIE {"round":<n>}
+```
+
+Ronde blijft gelijk, spelers sturen opnieuw `TOH_CHOICE`.
+
+### Verschillende keuzes
+
+Server gooit coin en kent punt toe.
+
+```text
+S -> Winner: TOH_RESULT {"round":<n>, "coin":"heads|tails", "winner":"you", "score":{"you":<x>,"opponent":<y>}}
+S -> Loser:  TOH_RESULT {"round":<n>, "coin":"heads|tails", "winner":"opponent", "score":{"you":<x>,"opponent":<y>}}
+```
+
+Na resultaat start automatisch volgende ronde (`round++`).
+
+## Game End (bij ≥3 punten)
+
+```text
+S -> Winner: TOH_END {"winner":"you", "final_score":{"you":<x>,"opponent":<y>}}
+S -> Loser:  TOH_END {"winner":"opponent", "final_score":{"you":<x>,"opponent":<y>}}
+```
+
 
 ## 9.2 Unhappy flow
 
@@ -240,10 +276,11 @@ S -> C: TOH_GAME_RESP {"status": "ERROR", "code": <error code>}
 ```
 Possible `<error code>`:
 
-| Error code  | Description                                            |
-|-------------|--------------------------------------------------------|
-| 10000       | User does not exist                                    |
-| 10001       | Cannot play heads or tails with yourself               |
-| 10002       | Cannot play game with someone who is already in a game |
-| 10003       | User already has a pending invite                      |
-| 10004       | Invalid choice                                         |
+| Error code  | Description                                                 |
+|-------------|-------------------------------------------------------------|
+| 10000       | Opponent does not exist                                     |
+| 10001       | Cannot play with yourself                                   |
+| 10002       | You or opponent already in a game                           |
+| 10003       | No pending invitation                                       |
+| 10004       | Invalid choice (not heads/tails)                            |
+| 10005       | Game already ended                                          | 
