@@ -1,7 +1,7 @@
-package protocol.commands;
+package protocol.commands.common;
 
 import managers.HeartbeatManager;
-import protocol.ICommandHandler;
+import protocol.commands.ICommandHandler;
 
 public record PongCommand(HeartbeatManager manager) implements ICommandHandler {
     @Override

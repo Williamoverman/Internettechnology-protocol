@@ -1,10 +1,10 @@
-package protocol.commands;
+package protocol.commands.common;
 
 import com.google.gson.JsonSyntaxException;
 import connection.ClientConnection;
 import managers.HeartbeatManager;
-import protocol.ICommandHandler;
-import requests.LogonRequest;
+import protocol.commands.ICommandHandler;
+import requests.common.LogonRequest;
 import protocol.ClientMessenger;
 
 public record LogonCommand(ClientMessenger messenger, HeartbeatManager manager, ClientConnection connection) implements ICommandHandler {

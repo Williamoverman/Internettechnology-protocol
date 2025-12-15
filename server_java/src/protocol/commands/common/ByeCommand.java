@@ -1,7 +1,7 @@
-package protocol.commands;
+package protocol.commands.common;
 
 import connection.ClientConnection;
-import protocol.ICommandHandler;
+import protocol.commands.ICommandHandler;
 import protocol.ClientMessenger;
 
 public record ByeCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {

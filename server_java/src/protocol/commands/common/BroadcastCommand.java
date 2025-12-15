@@ -1,10 +1,10 @@
-package protocol.commands;
+package protocol.commands.common;
 
 import com.google.gson.JsonSyntaxException;
 import connection.ClientConnection;
-import protocol.ICommandHandler;
+import protocol.commands.ICommandHandler;
 import protocol.MessageFormatter;
-import requests.BroadcastRequest;
+import requests.common.BroadcastRequest;
 import protocol.ClientMessenger;
 
 public record BroadcastCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {

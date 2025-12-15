@@ -1,10 +1,10 @@
-package protocol.commands;
+package protocol.commands.common;
 
 import connection.ClientConnection;
-import protocol.ICommandHandler;
+import protocol.commands.ICommandHandler;
 import protocol.ClientMessenger;
 import protocol.MessageFormatter;
-import requests.DmRequest;
+import requests.common.DmRequest;
 
 public record DmCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override

@@ -1,6 +1,6 @@
-package protocol.commands;
+package protocol.commands.common;
 
-import protocol.ICommandHandler;
+import protocol.commands.ICommandHandler;
 import protocol.ClientMessenger;
 
 import java.util.List;

@@ -47,9 +47,8 @@ public class UserRegistry {
      */
     public void removeConnection(ClientConnection connection) {
         String username = connections.remove(connection);
-        if (username != null) {
+        if (username != null)
             users.remove(username);
-        }
     }
 
     /**

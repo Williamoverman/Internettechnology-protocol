@@ -1,4 +1,4 @@
-package protocol;
+package protocol.commands;
 
 import com.google.gson.Gson;
 import managers.UserRegistry;

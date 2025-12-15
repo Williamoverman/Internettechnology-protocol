@@ -272,7 +272,7 @@ S -> Loser:  TOH_END {"winner":"opponent", "final_score":{"you":<x>,"opponent":<
 
 Example:
 ```
-S -> C: TOH_GAME_RESP {"status": "ERROR", "code": <error code>}
+S -> C: TOH_RESP {"status": "ERROR", "code": <error code>}
 ```
 Possible `<error code>`:
 
