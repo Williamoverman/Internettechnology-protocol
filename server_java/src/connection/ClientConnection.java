@@ -1,5 +1,6 @@
 package connection;
 
+import managers.ToHManager;
 import managers.UserRegistry;
 import protocol.ClientMessenger;
 
@@ -41,8 +42,10 @@ public class ClientConnection {
 
         UserRegistry userRegistry = UserRegistry.getInstance();
         String username = userRegistry.getUsername(this);
-        if (username != null)
+        if (username != null) {
+            ToHManager.getInstance().removePlayer(username);
             ClientMessenger.broadcastLeft(userRegistry.getAllExcept(username), username);
+        }
 
         userRegistry.removeConnection(this);
 

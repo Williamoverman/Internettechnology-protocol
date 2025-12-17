@@ -63,4 +63,12 @@ public class ToH {
     public int getScorePlayerTwo() {
         return this.scorePlayerTwo;
     }
+
+    public String getChoicePlayerOne() {
+        return this.choicePlayerOne;
+    }
+
+    public String getChoicePlayerTwo() {
+        return this.choicePlayerTwo;
+    }
 }

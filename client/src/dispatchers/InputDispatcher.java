@@ -1,7 +1,8 @@
 package dispatchers;
 
 import protocols.CommandHandler;
-import protocols.commands.*;
+import protocols.commands.ToH.*;
+import protocols.commands.common.*;
 import senders.CommandSender;
 
 import java.util.HashMap;
@@ -25,6 +26,12 @@ public class InputDispatcher {
         handlers.put("broadcast", new BroadcastCommand(sender));
         handlers.put("online", new OnlineCommand(sender));
         handlers.put("dm", new DmCommand(sender));
+
+        // toh game
+        handlers.put("invite", new InviteCommand(sender));
+        handlers.put("accept", new AcceptCommand(sender));
+        handlers.put("decline", new DeclineCommand(sender));
+        handlers.put("choice", new ChoiceCommand(sender));
     }
 
     /**

@@ -263,8 +263,8 @@ Na resultaat start automatisch volgende ronde (`round++`).
 ## Game End (bij ≥3 punten)
 
 ```text
-S -> Winner: TOH_END {"winner":"you", "final_score":{"you":<x>,"opponent":<y>}}
-S -> Loser:  TOH_END {"winner":"opponent", "final_score":{"you":<x>,"opponent":<y>}}
+S -> Winner: TOH_END {"winner":"you", "finalScore":{"you":<x>,"opponent":<y>}}
+S -> Loser:  TOH_END {"winner":"opponent", "finalScore":{"you":<x>,"opponent":<y>}}
 ```
 
 

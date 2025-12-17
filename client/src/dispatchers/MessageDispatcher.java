@@ -1,7 +1,8 @@
 package dispatchers;
 
 import protocols.MessageHandler;
-import protocols.messages.*;
+import protocols.messages.ToH.*;
+import protocols.messages.common.*;
 
 import java.util.HashMap;
 
@@ -12,9 +13,6 @@ public class MessageDispatcher {
         registerHandlers();
     }
 
-    /**
-     * Register all basic protocol message receiver handlers
-     */
     private void registerHandlers() {
         handlers.put("HI", new HiMessage());
         handlers.put("BROADCAST", new BroadcastMessage());
@@ -28,6 +26,15 @@ public class MessageDispatcher {
         handlers.put("ONLINE", new OnlineMessage());
         handlers.put("DM", new DmMessage());
         handlers.put("DM_RESP", new StatusMessage());
+
+        // toh game
+        handlers.put("TOH_RESP", new StatusMessage());
+        handlers.put("TOH_INVITE", new InviteMessage());
+        handlers.put("TOH_START", new StartMessage());
+        handlers.put("TOH_DECLINED", new DeclineMessage());
+        handlers.put("TOH_TIE", new TieMessage());
+        handlers.put("TOH_RESULT", new ResultMessage());
+        handlers.put("TOH_END", new EndResultMessage());
     }
 
     /**

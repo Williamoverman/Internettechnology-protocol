@@ -28,4 +28,20 @@ public class CommandSender {
     public void online() { sendCommand("ONLINE_REQ"); }
 
     public void dm(String message) { sendCommand("DM_REQ " + message); }
+
+    public void invite(String opponent) {
+        connection.sendMessage("TOH_INVITE {\"opponent\":\"" + opponent + "\"}");
+    }
+
+    public void choice(String choice) {
+        connection.sendMessage("TOH_CHOICE {\"choice\":\"" + choice + "\"}");
+    }
+
+    public void accept() {
+        sendCommand("TOH_ACCEPT");
+    }
+
+    public void decline() {
+        sendCommand("TOH_DECLINE");
+    }
 }

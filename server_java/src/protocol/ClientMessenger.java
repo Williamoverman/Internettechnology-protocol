@@ -28,8 +28,21 @@ public class ClientMessenger {
         connection.sendMessage(MessageFormatter.createPing());
     }
 
+    /**
+     * send online to client
+     * @param users the online users
+     */
     public void sendOnline(List<String> users) {
         connection.sendMessage(MessageFormatter.createOnline(users));
+    }
+
+    /**
+     * send start message for ToH to client
+     * @param opponent opponent name
+     * @param roundNumber the number of the current round
+     */
+    public void sendStart(String opponent, int roundNumber) {
+        connection.sendMessage(MessageFormatter.createStart(opponent, roundNumber));
     }
 
     /**
@@ -56,7 +69,7 @@ public class ClientMessenger {
         connection.sendMessage(MessageFormatter.createErrorResponse(header, code));
     }
 
-    // broadcast to multiple clients
+    // broadcast to multiple/other clients
 
     /**
      * Broadcasts a message to multiple clients
