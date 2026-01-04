@@ -118,4 +118,15 @@ public class MessageFormatter {
         data.put("finalScore", finalScore);
         return "TOH_END " + gson.toJson(data);
     }
+
+    public static String createParseErrorResponse() {
+        return "PARSE_ERROR";
+    }
+
+    public static String createPongErrorResponse(int code) {
+        Map<String, Integer> pongError = new HashMap<>();
+        pongError.put("code", code);
+
+        return "PONG_ERROR " + gson.toJson(pongError);
+    }
 }

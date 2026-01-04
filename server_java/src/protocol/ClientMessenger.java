@@ -69,6 +69,20 @@ public class ClientMessenger {
         connection.sendMessage(MessageFormatter.createErrorResponse(header, code));
     }
 
+    /**
+     * send parse error to client
+     */
+    public void sendParseError() {
+        connection.sendMessage(MessageFormatter.createParseErrorResponse());
+    }
+
+    /**
+     * send pong error to client
+     */
+    public void sendPongError(int code) {
+        connection.sendMessage(MessageFormatter.createPongErrorResponse(code));
+    }
+
     // broadcast to multiple/other clients
 
     /**

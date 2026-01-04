@@ -32,7 +32,7 @@ public class CommandDispatcher {
         commands.put("BYE", new ByeCommand(messenger, connection));
         commands.put("ONLINE_REQ", new OnlineCommand(messenger));
         commands.put("DM_REQ", new DmCommand(messenger, connection));
-        commands.put("PONG", new PongCommand(manager));
+        commands.put("PONG", new PongCommand(manager, messenger));
 
         // tails or heads game
         commands.put("TOH_INVITE", new InviteCommand(messenger, connection));

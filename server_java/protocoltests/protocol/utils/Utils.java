@@ -20,7 +20,7 @@ public class Utils {
         objToNameMapping.put(Joined.class, "JOINED");
         objToNameMapping.put(ParseError.class, "PARSE_ERROR");
         objToNameMapping.put(Pong.class, "PONG");
-        objToNameMapping.put(PongError.class, "PONG_ERROR");
+        objToNameMapping.put(PongErrorResponse.class, "PONG_ERROR");
         objToNameMapping.put(Hi.class, "HI");
         objToNameMapping.put(Ping.class, "PING");
         objToNameMapping.put(ByeResp.class, "BYE_RESP");

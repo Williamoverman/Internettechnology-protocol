@@ -4,6 +4,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import protocol.messages.*;
 import protocol.utils.Utils;
+import utils.Config;
 
 import java.io.*;
 import java.net.Socket;
@@ -195,7 +196,7 @@ class SingleUser {
         void when_an_initial_connection_to_the_server_is_made() throws JsonProcessingException {
             String firstLine = receiveLineWithTimeout(in, "Hi expected");
             Hi hi = Utils.messageToObject(firstLine);
-            assertEquals(new Hi("1.7.0"), hi);
+            assertEquals(new Hi(Config.SERVER_VERSION), hi);
         }
     }
 
@@ -258,8 +259,10 @@ class SingleUser {
             out.println(Utils.objectToMessage(new Pong()));
             out.flush();
             String serverResponse = receiveLineWithTimeout(in, "LOGON_RESP expected");
-            PongError pongError = Utils.messageToObject(serverResponse);
-            assertEquals(new PongError(8000), pongError);
+            System.out.println(serverResponse);
+            PongErrorResponse pongError = Utils.messageToObject(serverResponse);
+            System.out.println(pongError);
+            assertEquals(new PongErrorResponse(8000), pongError);
         }
     }
 
