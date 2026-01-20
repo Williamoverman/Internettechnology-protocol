@@ -6,11 +6,9 @@ import connection.ClientConnection;
 import managers.HeartbeatManager;
 import protocol.commands.ICommandHandler;
 import protocol.ClientMessenger;
-import protocol.commands.ToHGame.AcceptCommand;
-import protocol.commands.ToHGame.ChoiceCommand;
-import protocol.commands.ToHGame.DeclineCommand;
-import protocol.commands.ToHGame.InviteCommand;
+import protocol.commands.ToHGame.*;
 import protocol.commands.common.*;
+import protocol.commands.filetransfer.*;
 
 public class CommandDispatcher {
     private final HashMap<String, ICommandHandler> commands = new HashMap<>();
@@ -36,9 +34,16 @@ public class CommandDispatcher {
 
         // tails or heads game
         commands.put("TOH_INVITE", new InviteCommand(messenger, connection));
-        commands.put("TOH_ACCEPT", new AcceptCommand(messenger, connection));
-        commands.put("TOH_DECLINE", new DeclineCommand(messenger, connection));
+        commands.put("TOH_ACCEPT", new protocol.commands.ToHGame.AcceptCommand(messenger, connection));
+        commands.put("TOH_DECLINE", new protocol.commands.ToHGame.DeclineCommand(messenger, connection));
         commands.put("TOH_CHOICE", new ChoiceCommand(messenger, connection));
+
+        // file transfer
+        commands.put("FILE_SEND_REQ", new SendCommand(messenger, connection));
+        commands.put("FILE_ACCEPT", new protocol.commands.filetransfer.AcceptCommand(messenger, connection));
+        commands.put("FILE_DECLINE", new protocol.commands.filetransfer.DeclineCommand(messenger, connection));
+        commands.put("FILE_UPLOAD_INIT", new UploadCommand(messenger, connection));
+        commands.put("FILE_DOWNLOAD_INIT", new DownloadCommand(messenger, connection));
     }
 
     public void dispatch(String header, String jsonBody) {

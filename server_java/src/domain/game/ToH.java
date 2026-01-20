@@ -1,4 +1,4 @@
-package games;
+package domain.game;
 
 public class ToH {
     private final String playerOne;

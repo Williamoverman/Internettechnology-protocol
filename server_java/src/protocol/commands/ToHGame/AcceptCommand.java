@@ -1,7 +1,7 @@
 package protocol.commands.ToHGame;
 
 import connection.ClientConnection;
-import games.ToH;
+import domain.game.ToH;
 import managers.ToHManager;
 import protocol.ClientMessenger;
 import protocol.MessageFormatter;

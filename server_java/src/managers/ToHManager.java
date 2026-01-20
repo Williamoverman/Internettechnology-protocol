@@ -1,9 +1,6 @@
 package managers;
 
-import connection.ClientConnection;
-import games.ToH;
-import protocol.ClientMessenger;
-import protocol.MessageFormatter;
+import domain.game.ToH;
 
 import java.util.concurrent.ConcurrentHashMap;
 

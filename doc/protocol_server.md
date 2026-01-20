@@ -284,3 +284,74 @@ Possible `<error code>`:
 | 10003       | No pending invitation                                       |
 | 10004       | Invalid choice (not heads/tails)                            |
 | 10005       | Game already ended                                          | 
+
+## 10 file transfer
+De file transfer gebeurt via aparte sockets voor upload en download, om chatten niet te blokkeren. Gebruik SHA-256 checksum voor integriteit. Bestanden groter dan geheugen worden ondersteund via temp files.
+
+## 10.1 Happy flow
+### Offer en accept
+```
+C1 -> S: FILE_SEND_REQ {"recipient":"<C2>", "filename":"<file.txt>", "size":<12345>, "checksum":"<sha256hash>"}
+
+S -> C1: FILE_SEND_RESP {"status":"OK"}
+
+S -> C2: FILE_OFFER {"from":"<C1>", "filename":"<file.txt>", "size":<12345>, "checksum":"<sha256hash>"}
+
+C2 -> S: FILE_ACCEPT {}
+
+S -> C2: FILE_ACCEPT_RESP {"status":"OK", "transfer_id":"<uuid>"}
+
+S -> C1: FILE_ACCEPTED {"transfer_id":"<uuid>", "accepter":"<C2>"}
+```
+
+### Upload (aparte socket)
+Client C1 opent nieuwe socket:
+```
+S -> C1: HI {"version":"<version>"}
+
+C1 -> S: FILE_UPLOAD_INIT {"transfer_id":"<uuid>"}
+
+S -> C1: FILE_UPLOAD_READY {"status":"OK"}
+```
+
+Daarna stuurt C1 binary chunks: herhaal [4 bytes length (big-endian int), chunk bytes], tot length=0.
+S ontvangt, schrijft naar temp file, checkt checksum.
+```
+S -> C1: FILE_UPLOAD_DONE {"status":"OK"}
+```
+
+of ERROR.
+Sluit socket.
+
+### Download (aparte socket)
+Client C2 opent nieuwe socket (na accept):
+```
+S -> C2: HI {"version":"<version>"}
+
+C2 -> S: FILE_DOWNLOAD_INIT {"transfer_id":"<uuid>"}
+
+S -> C2: FILE_DOWNLOAD_READY {"status":"OK"}
+```
+
+S wacht op upload done, stuurt binary chunks hetzelfde formaat.
+```
+S -> C2: FILE_DOWNLOAD_DONE {"status":"OK"}
+```
+Sluit socket, delete temp file.
+
+## 10.2 Unhappy flow
+```
+S -> C: FILE_RESP {"status":"ERROR", "code":<error code>}
+```
+Mogelijke codes:
+
+| Error code | Beschrijving                         |
+|------------|--------------------------------------|
+| 11000      | Ontvanger bestaat niet               |
+| 11001      | Kan niet naar jezelf sturen          |
+| 11002      | Jij of ontvanger al in transfer      |
+| 11003      | Geen pending offer                   |
+| 11004      | Ongeldig request                     |
+| 11005      | Ongeldig transfer ID                 |
+| 11006      | Checksum mismatch                    |
+| 11007      | Transfer error (bijv. upload failed) |
