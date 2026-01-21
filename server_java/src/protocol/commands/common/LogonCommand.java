@@ -38,6 +38,8 @@ public record LogonCommand(ClientMessenger messenger, HeartbeatManager manager, 
             return;
         }
 
+        registry.pruneDisconnected();
+
         if (registry.isLoggedIn(connection)) {
             messenger.sendError("LOGON_RESP", 5002);
             return;

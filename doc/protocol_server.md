@@ -207,7 +207,7 @@ Two clients can play a Tails or Heads game with each other using the server.
 ## Invite
 
 ```text
-C1 -> S: TOH_INVITE {"opponent":"<username>"}
+C1 -> S: TOH_INVITE_REQ {"opponent":"<username>"}
 S  -> C1: TOH_RESP   {"status":"OK"}
 
 S  -> C2: TOH_INVITE {"from":"<username>"}

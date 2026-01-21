@@ -58,7 +58,10 @@ public class UserRegistry {
      */
     public List<ClientConnection> getAllExcept(String excludeUsername) {
         return users.values().stream()
-                .filter(conn -> !connections.get(conn).equals(excludeUsername))
+                .filter(conn -> {
+                    String name = connections.get(conn);
+                    return name != null && !name.equals(excludeUsername);
+                })
                 .toList();
     }
 
@@ -104,5 +107,18 @@ public class UserRegistry {
      */
     public List<String> getAllUsernames() {
         return users.keySet().stream().toList();
+    }
+
+    public void pruneDisconnected() {
+        connections.keySet().forEach(conn -> {
+            if (!conn.isConnected()) {
+                String username = connections.remove(conn);
+                if (username != null) {
+                    users.remove(username);
+                    managers.ToHManager.getInstance().removePlayer(username);
+                    protocol.ClientMessenger.broadcastLeft(getAllExcept(username), username);
+                }
+            }
+        });
     }
 }

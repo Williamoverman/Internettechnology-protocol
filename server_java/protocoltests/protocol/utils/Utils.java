@@ -24,6 +24,12 @@ public class Utils {
         objToNameMapping.put(Hi.class, "HI");
         objToNameMapping.put(Ping.class, "PING");
         objToNameMapping.put(ByeResp.class, "BYE_RESP");
+        objToNameMapping.put(ToHInviteReq.class, "TOH_INVITE_REQ");
+        objToNameMapping.put(ToHResp.class, "TOH_RESP");
+        objToNameMapping.put(ToHInvite.class, "TOH_INVITE");
+        objToNameMapping.put(ToHStart.class, "TOH_START");
+        objToNameMapping.put(ToHDeclined.class, "TOH_DECLINED");
+        objToNameMapping.put(ToHChoiceReq.class, "TOH_CHOICE");
     }
 
     public static String objectToMessage(Object object) throws JsonProcessingException {

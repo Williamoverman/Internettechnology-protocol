@@ -33,7 +33,7 @@ public class CommandDispatcher {
         commands.put("PONG", new PongCommand(manager, messenger));
 
         // tails or heads game
-        commands.put("TOH_INVITE", new InviteCommand(messenger, connection));
+        commands.put("TOH_INVITE_REQ", new InviteCommand(messenger, connection));
         commands.put("TOH_ACCEPT", new protocol.commands.ToHGame.AcceptCommand(messenger, connection));
         commands.put("TOH_DECLINE", new protocol.commands.ToHGame.DeclineCommand(messenger, connection));
         commands.put("TOH_CHOICE", new ChoiceCommand(messenger, connection));

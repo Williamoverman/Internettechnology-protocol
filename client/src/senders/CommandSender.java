@@ -30,7 +30,7 @@ public class CommandSender {
     public void dm(String message) { sendCommand("DM_REQ " + message); }
 
     public void invite(String opponent) {
-        connection.sendMessage("TOH_INVITE {\"opponent\":\"" + opponent + "\"}");
+        connection.sendMessage("TOH_INVITE_REQ {\"opponent\":\"" + opponent + "\"}");
     }
 
     public void choice(String choice) {
