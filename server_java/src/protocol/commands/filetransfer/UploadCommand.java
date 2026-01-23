@@ -1,8 +1,10 @@
 package protocol.commands.filetransfer;
 
+import connection.ClientConnection;
+import protocol.ClientMessenger;
 import protocol.commands.ICommandHandler;
 
-public record UploadCommand(protocol.ClientMessenger messenger, connection.ClientConnection connection) implements ICommandHandler {
+public record UploadCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
 
