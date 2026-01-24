@@ -41,6 +41,7 @@ public class MessageDispatcher {
         handlers.put("FILE_OFFER", new FileOfferMessage());
         handlers.put("FILE_RESP", new StatusMessage());
         handlers.put("FILE_ACCEPTED", new FileAcceptedMessage());
+        handlers.put("FILE_DECLINED", new FileDeclinedMessage());
     }
 
     /**

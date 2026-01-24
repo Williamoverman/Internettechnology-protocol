@@ -1,0 +1,185 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+
+package "Server Core" {
+    class Main {
+        + {static} main(args: String[])
+    }
+
+    class "managers.SocketManager" as SocketManager {
+        + setup()
+        + stop()
+    }
+}
+
+package "Connection & Handling" {
+    class "connection.ClientConnection" as ClientConnection {
+        - clientSocket: Socket
+        - reader: BufferedReader
+        - writer: PrintWriter
+        - connected: boolean
+        + ClientConnection(socket: Socket)
+        + readCommand(): String
+        + sendMessage(message: String)
+        + isConnected(): boolean
+        + getInputStream(): InputStream
+        + getOutputStream(): OutputStream
+        + exit()
+    }
+
+    class "handlers.ClientHandler" as ClientHandler implements Runnable {
+        - clientSocket: Socket
+        + run()
+    }
+
+    class "listener.CommandListener" as CommandListener implements Runnable {
+        - running: boolean
+        + run()
+        + stop()
+    }
+
+    class "handlers.CommandHandler" as CommandHandler {
+        + handleCommand(command: String)
+    }
+}
+
+package "Protocol & Dispatching" {
+    class "dispatchers.CommandDispatcher" as CommandDispatcher {
+        - commands: HashMap<String, ICommandHandler>
+        + dispatch(header: String, jsonBody: String)
+    }
+
+    interface "protocol.commands.ICommandHandler" as ICommandHandler {
+        + process(jsonBody: String)
+    }
+
+    class "protocol.ClientMessenger" as ClientMessenger {
+        + sendWelcome()
+        + sendPing()
+        + sendOnline(users: List<String>)
+        + sendOK(header: String)
+        + sendError(header: String, code: int)
+        + sendAccepted(transferId: String, accepter: String)
+        + {static} broadcast(connections: List<ClientConnection>, message: String)
+    }
+}
+
+package "Commands" {
+    class LogonCommand implements ICommandHandler
+    class SendCommand implements ICommandHandler
+    class UploadCommand implements ICommandHandler
+    class DownloadCommand implements ICommandHandler
+    class AcceptCommand implements ICommandHandler
+    class InviteCommand implements ICommandHandler
+    class ChoiceCommand implements ICommandHandler
+    class BroadcastCommand implements ICommandHandler
+    class ByeCommand implements ICommandHandler
+    class OnlineCommand implements ICommandHandler
+    class DmCommand implements ICommandHandler
+}
+
+package "Managers (Singleton)" {
+    class "managers.UserRegistry" as UserRegistry {
+        - {static} instance: UserRegistry
+        - users: ConcurrentHashMap<String, ClientConnection>
+        - connections: ConcurrentHashMap<ClientConnection, String>
+        + {static} getInstance(): UserRegistry
+        + addUser(username: String, connection: ClientConnection)
+        + removeUser(username: String)
+        + getConnection(username: String): ClientConnection
+        + getUsername(connection: ClientConnection): String
+        + getAllExcept(exclude: String): List<ClientConnection>
+    }
+
+    class "managers.FileTransferManager" as FileTransferManager {
+        - {static} instance: FileTransferManager
+        - pendingOffers: ConcurrentHashMap<String, FileOffer>
+        - activeTransfers: ConcurrentHashMap<String, FileTransfer>
+        + {static} getInstance(): FileTransferManager
+        + addOffer(offer: FileOffer): boolean
+        + accept(recipient: String): FileTransfer
+        + getTransfer(transferId: String): FileTransfer
+        + setUploadComplete(transferId: String, complete: boolean)
+        + setDownloadComplete(transferId: String)
+    }
+
+    class "managers.ToHManager" as ToHManager {
+        - {static} instance: ToHManager
+        - activeGames: ConcurrentHashMap<String, ToH>
+        - pendingInvites: ConcurrentHashMap<String, String>
+        + {static} getInstance(): ToHManager
+        + sendInvite(from: String, to: String): boolean
+        + acceptInvite(accepter: String): String
+        + getGame(username: String): ToH
+    }
+    
+    class "managers.HeartbeatManager" as HeartbeatManager {
+        + start()
+        + stop()
+    }
+}
+
+package "Domain" {
+    class "domain.filetransfer.FileOffer" as FileOffer {
+        - sender: String
+        - recipient: String
+        - filename: String
+        - size: long
+        - checksum: String
+    }
+
+    class "domain.filetransfer.FileTransfer" as FileTransfer {
+        - transferId: String
+        - sender: String
+        - recipient: String
+        - filename: String
+        - tempFile: File
+        - uploadComplete: boolean
+        - downloadComplete: boolean
+        + getTempFile(): File
+    }
+
+    class "domain.game.ToH" as ToH {
+        - playerOne: String
+        - playerTwo: String
+        - roundNumber: int
+        - scorePlayerOne: int
+        - scorePlayerTwo: int
+        + setChoice(player: String, choice: String)
+        + bothPlayersChosen(): boolean
+    }
+}
+
+Main --> SocketManager : uses
+SocketManager ..> ClientHandler : creates
+ClientHandler --> ClientConnection : creates
+ClientHandler --> ClientMessenger : creates
+ClientHandler --> HeartbeatManager : creates
+ClientHandler --> CommandDispatcher : creates
+ClientHandler --> CommandHandler : creates
+ClientHandler --> CommandListener : creates
+
+CommandListener --> ClientConnection : reads
+CommandListener --> CommandHandler : delegates
+
+CommandHandler --> CommandDispatcher : delegates
+
+CommandDispatcher --> ICommandHandler : contains map of
+CommandDispatcher --> ClientMessenger : uses
+
+ICommandHandler ..> UserRegistry : uses
+ICommandHandler ..> FileTransferManager : uses
+ICommandHandler ..> ToHManager : uses
+ICommandHandler ..> ClientMessenger : uses
+
+ClientMessenger --> ClientConnection : writes
+
+FileTransferManager --> "0..*" FileOffer : manages
+FileTransferManager --> "0..*" FileTransfer : manages
+
+ToHManager --> "0..*" ToH : manages
+
+UserRegistry --> "0..*" ClientConnection : stores
+
+@enduml

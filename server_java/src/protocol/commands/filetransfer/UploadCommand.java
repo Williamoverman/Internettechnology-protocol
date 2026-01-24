@@ -36,19 +36,17 @@ public record UploadCommand(ClientMessenger messenger, ClientConnection connecti
 
             messenger.sendOK("FILE_UPLOAD_READY");
 
-            InputStream is = connection.getInputStream();
-            DataInputStream dis = new DataInputStream(is);
-            FileOutputStream fos = new FileOutputStream(temp);
-
-            byte[] buffer = new byte[8192];
-            while (true) {
-                int length = dis.readInt();
-                if (length == 0) break;
-                if (length > buffer.length) buffer = new byte[length];
-                dis.readFully(buffer, 0, length);
-                fos.write(buffer, 0, length);
+            try (DataInputStream dis = new DataInputStream(connection.getInputStream());
+                 FileOutputStream fos = new FileOutputStream(temp)) {
+                byte[] buffer = new byte[8192];
+                while (true) {
+                    int length = dis.readInt();
+                    if (length == 0) break;
+                    if (length > buffer.length) buffer = new byte[length];
+                    dis.readFully(buffer, 0, length);
+                    fos.write(buffer, 0, length);
+                }
             }
-            fos.close();
 
             String calculatedChecksum = calculateChecksum(temp);
             if (!calculatedChecksum.equals(transfer.getChecksum())) {

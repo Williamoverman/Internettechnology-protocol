@@ -46,19 +46,13 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
         try {
             messenger.sendOK("FILE_DOWNLOAD_READY");
 
-            OutputStream os = connection.getOutputStream();
-            DataOutputStream dos = new DataOutputStream(os);
-
-            FileInputStream fis = new FileInputStream(temp);
-            byte[] buffer = new byte[8192];
-            int len;
-            while ((len = fis.read(buffer)) > 0) {
-                dos.writeInt(len);
-                dos.write(buffer, 0, len);
+            DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
+            try (FileInputStream fis = new FileInputStream(temp)) {
+                LengthPrefixedOutputStream out = new LengthPrefixedOutputStream(dos);
+                fis.transferTo(out);
+                dos.writeInt(0);
+                dos.flush();
             }
-            dos.writeInt(0);
-            dos.flush();
-            fis.close();
 
             connection.getWriter().println(MessageFormatter.createOkResponse("FILE_DOWNLOAD_DONE"));
             connection.getWriter().flush();
@@ -69,6 +63,27 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
         } catch (Exception e) {
             connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_DOWNLOAD_DONE", 11007));
             connection.exit();
+        }
+    }
+
+    private static class LengthPrefixedOutputStream extends OutputStream {
+        private final DataOutputStream out;
+
+        LengthPrefixedOutputStream(DataOutputStream out) {
+            this.out = out;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            byte[] single = {(byte) b};
+            write(single, 0, 1);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            if (len <= 0) return;
+            out.writeInt(len);
+            out.write(b, off, len);
         }
     }
 }

@@ -38,11 +38,11 @@ public class CommandSender {
     }
 
     public void accept() {
-        sendCommand("TOH_ACCEPT");
+        sendCommand("TOH_ACCEPT {}");
     }
 
     public void decline() {
-        sendCommand("TOH_DECLINE");
+        sendCommand("TOH_DECLINE {}");
     }
 
     public void fileSend(String recipient, String filename, long size, String checksum) {
@@ -54,11 +54,11 @@ public class CommandSender {
     }
 
     public void fileAccept() {
-        connection.sendMessage("FILE_ACCEPT");
+        connection.sendMessage("FILE_ACCEPT {}");
     }
 
     public void fileDecline() {
-        connection.sendMessage("FILE_DECLINE");
+        connection.sendMessage("FILE_DECLINE {}");
     }
 
     private String escapeJson(String s) {

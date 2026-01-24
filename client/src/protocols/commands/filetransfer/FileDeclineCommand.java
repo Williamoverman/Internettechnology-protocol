@@ -13,7 +13,6 @@ public record FileDeclineCommand(CommandSender sender) implements CommandHandler
         }
         sender.fileDecline();
         FileTransferState.setPendingOffer(null);
-        System.out.println("Decline sent.");
         return true;
     }
 }

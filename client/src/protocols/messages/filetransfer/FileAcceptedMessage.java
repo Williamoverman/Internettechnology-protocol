@@ -18,7 +18,7 @@ public class FileAcceptedMessage implements MessageHandler {
             String transferId = node.path("transfer_id").asText();
             String accepter = node.path("accepter").asText();
 
-            System.out.printf("[FILE_ACCEPTED] Accepted by %s – transfer ID: %s%n", accepter, transferId);
+            System.out.printf("[FILE_ACCEPTED] Accepted by %s", accepter);
 
             FileTransferState.setWaitingForAcceptResponse(false);
             FileTransferState.setLastTransferId(transferId);
@@ -89,20 +89,20 @@ public class FileAcceptedMessage implements MessageHandler {
                 long received = 0;
                 long lastProgressReport = 0;
                 MessageDigest md = MessageDigest.getInstance("SHA-256");
+                byte[] buffer = new byte[8192];
 
                 while (true) {
                     int len = dis.readInt();
-                    if (len == 0) break; // End of transfer
+                    if (len == 0) break;
                     if (len < 0) throw new IOException("Negative chunk size: " + len);
+                    if (len > buffer.length) buffer = new byte[len];
 
-                    byte[] buf = new byte[len];
-                    dis.readFully(buf);
+                    dis.readFully(buffer, 0, len);
 
-                    fos.write(buf);
-                    md.update(buf);
+                    fos.write(buffer, 0, len);
+                    md.update(buffer, 0, len);
                     received += len;
 
-                    // Progress feedback every 10% (for large files)
                     if (expectedSize > 1_000_000 && received - lastProgressReport > expectedSize / 10) {
                         int progress = (int) ((received * 100) / expectedSize);
                         System.out.printf("  Download progress: %d%% (%d/%d bytes)\n",
@@ -111,19 +111,17 @@ public class FileAcceptedMessage implements MessageHandler {
                     }
                 }
 
-                // Verify size
                 if (received != expectedSize) {
-                    System.out.printf("✗ Size mismatch: expected %d, got %d → deleting file%n",
+                    System.out.printf("Size mismatch: expected %d, got %d → deleting file%n",
                             expectedSize, received);
                     fos.close();
                     out.delete();
                     return;
                 }
 
-                // Verify checksum
                 String computed = bytesToHex(md.digest());
                 if (!computed.equalsIgnoreCase(expectedChecksum)) {
-                    System.out.printf("✗ Checksum mismatch: expected %s, got %s → deleting file%n",
+                    System.out.printf("Checksum mismatch: expected %s, got %s → deleting file%n",
                             expectedChecksum, computed);
                     fos.close();
                     out.delete();
@@ -134,34 +132,33 @@ public class FileAcceptedMessage implements MessageHandler {
             String done = readLineUnbuffered(is);
             if (done != null && done.startsWith("FILE_DOWNLOAD_DONE ")) {
                 if (done.contains("\"status\":\"OK\"")) {
-                    System.out.println("✓ Download completed successfully → " + filename);
+                    System.out.println("Download completed successfully → " + filename);
                 } else {
-                    System.out.println("✗ Download finished with error: " + done);
+                    System.out.println("Download finished with error: " + done);
                     if (out.exists()) {
                         out.delete();
                     }
                 }
             } else {
-                System.out.println("⚠ Warning: Did not receive FILE_DOWNLOAD_DONE message");
+                System.out.println("Warning: Did not receive FILE_DOWNLOAD_DONE message");
             }
 
         } catch (IOException e) {
-            System.err.println("✗ Download failed (I/O error): " + e.getMessage());
+            System.err.println("Download failed (I/O error): " + e.getMessage());
             if (out != null && out.exists()) {
                 out.delete();
-                System.out.println("  Deleted incomplete file");
+                System.out.println("Deleted incomplete file");
             }
         } catch (Exception e) {
-            System.err.println("✗ Download failed: " + e.getMessage());
+            System.err.println("Download failed: " + e.getMessage());
             e.printStackTrace();
             if (out != null && out.exists()) {
                 out.delete();
-                System.out.println("  Deleted incomplete file");
+                System.out.println("Deleted incomplete file");
             }
         }
     }
 
-    // Helper to read a line byte-by-byte to avoid buffering issues
     private String readLineUnbuffered(InputStream is) throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         int b;
@@ -185,41 +182,56 @@ public class FileAcceptedMessage implements MessageHandler {
 
             String line = reader.readLine();
             if (line == null || !line.startsWith("FILE_UPLOAD_READY ")) {
-                System.out.println("✗ Did not receive FILE_UPLOAD_READY");
+                System.out.println("Did not receive FILE_UPLOAD_READY");
                 return;
             }
             if (line.contains("\"status\":\"ERROR\"")) {
-                System.out.println("✗ Server error on upload init: " + line);
+                System.out.println("Server error on upload init: " + line);
                 return;
             }
 
-            DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
             try (FileInputStream fis = new FileInputStream(file)) {
-                byte[] buffer = new byte[8192];
-                int len;
-                while ((len = fis.read(buffer)) > 0) {
-                    dos.writeInt(len);
-                    dos.write(buffer, 0, len);
-                }
+                DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+                LengthPrefixedOutputStream out = new LengthPrefixedOutputStream(dos);
+                fis.transferTo(out);
                 dos.writeInt(0);
                 dos.flush();
             }
 
             String done = reader.readLine();
             if (done != null && done.startsWith("FILE_UPLOAD_DONE ")) {
-                if (done.contains("\"status\":\"OK\"")) {
-                    System.out.println("✓ Upload completed successfully → " + file.getName());
-                } else {
-                    System.out.println("✗ Upload finished with error: " + done);
-                }
-            } else {
-                System.out.println("⚠ Warning: Did not receive FILE_UPLOAD_DONE message");
+                System.out.println();
+                if (done.contains("\"status\":\"OK\""))
+                    System.out.println("Upload completed successfully → " + file.getName());
+                else
+                    System.out.println("Upload finished with error: " + done);
             }
         } catch (IOException e) {
-            System.err.println("✗ Upload failed (I/O error): " + e.getMessage());
+            System.err.println("Upload failed (I/O error): " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("✗ Upload failed: " + e.getMessage());
+            System.err.println("Upload failed: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private static class LengthPrefixedOutputStream extends OutputStream {
+        private final DataOutputStream out;
+
+        LengthPrefixedOutputStream(DataOutputStream out) {
+            this.out = out;
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            byte[] single = {(byte) b};
+            write(single, 0, 1);
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            if (len <= 0) return;
+            out.writeInt(len);
+            out.write(b, off, len);
         }
     }
 
