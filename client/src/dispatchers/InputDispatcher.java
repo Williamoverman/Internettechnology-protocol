@@ -3,6 +3,7 @@ package dispatchers;
 import protocols.CommandHandler;
 import protocols.commands.ToH.*;
 import protocols.commands.common.*;
+import protocols.commands.filetransfer.*;
 import senders.CommandSender;
 
 import java.util.HashMap;
@@ -32,6 +33,11 @@ public class InputDispatcher {
         handlers.put("accept", new AcceptCommand(sender));
         handlers.put("decline", new DeclineCommand(sender));
         handlers.put("choice", new ChoiceCommand(sender));
+
+        // file transfer
+        handlers.put("fileoffer", new FileSendCommand(sender));
+        handlers.put("fileaccept", new FileAcceptCommand(sender));
+        handlers.put("filedecline", new FileDeclineCommand(sender));
     }
 
     /**

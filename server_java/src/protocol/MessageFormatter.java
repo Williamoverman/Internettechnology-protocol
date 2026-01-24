@@ -129,4 +129,26 @@ public class MessageFormatter {
 
         return "PONG_ERROR " + gson.toJson(pongError);
     }
+
+    public static String createFileOffer(String from, String filename, long size, String checksum) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("from", from);
+        data.put("filename", filename);
+        data.put("size", size);
+        data.put("checksum", checksum);
+        return "FILE_OFFER " + gson.toJson(data);
+    }
+
+    public static String createFileAccepted(String transferId, String accepter) {
+        Map<String, String> data = new HashMap<>();
+        data.put("transfer_id", transferId);
+        data.put("accepter", accepter);
+        return "FILE_ACCEPTED " + gson.toJson(data);
+    }
+
+    public static String createFileDeclined(String decliner) {
+        Map<String, String> data = new HashMap<>();
+        data.put("from", decliner);
+        return "FILE_DECLINED " + gson.toJson(data);
+    }
 }

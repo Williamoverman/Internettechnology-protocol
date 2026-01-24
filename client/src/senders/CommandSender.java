@@ -44,4 +44,26 @@ public class CommandSender {
     public void decline() {
         sendCommand("TOH_DECLINE");
     }
+
+    public void fileSend(String recipient, String filename, long size, String checksum) {
+        String json = String.format(
+                "{\"recipient\":\"%s\",\"filename\":\"%s\",\"size\":%d,\"checksum\":\"%s\"}",
+                escapeJson(recipient), escapeJson(filename), size, checksum
+        );
+        connection.sendMessage("FILE_SEND_REQ " + json);
+    }
+
+    public void fileAccept() {
+        connection.sendMessage("FILE_ACCEPT");
+    }
+
+    public void fileDecline() {
+        connection.sendMessage("FILE_DECLINE");
+    }
+
+    private String escapeJson(String s) {
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n");
+    }
 }

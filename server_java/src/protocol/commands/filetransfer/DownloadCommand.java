@@ -1,12 +1,74 @@
 package protocol.commands.filetransfer;
 
+import com.google.gson.reflect.TypeToken;
 import connection.ClientConnection;
+import domain.filetransfer.FileTransfer;
+import managers.FileTransferManager;
 import protocol.ClientMessenger;
+import protocol.MessageFormatter;
 import protocol.commands.ICommandHandler;
+
+import java.io.*;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 public record DownloadCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
+        Type mapType = new TypeToken<Map<String, String>>(){}.getType();
+        Map<String, String> data = gson.fromJson(jsonBody, mapType);
+        String transferId = data.get("transfer_id");
+        if (transferId == null) {
+            messenger.sendError("FILE_DOWNLOAD_READY", 11005);
+            return;
+        }
 
+        FileTransfer transfer = FileTransferManager.getInstance().getTransfer(transferId);
+        if (transfer == null) {
+            messenger.sendError("FILE_DOWNLOAD_READY", 11005);
+            return;
+        }
+
+        while (!transfer.isUploadComplete()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+
+        File temp = transfer.getTempFile();
+        if (temp == null || !temp.exists()) {
+            messenger.sendError("FILE_DOWNLOAD_READY", 11007);
+            return;
+        }
+
+        try {
+            messenger.sendOK("FILE_DOWNLOAD_READY");
+
+            OutputStream os = connection.getOutputStream();
+            DataOutputStream dos = new DataOutputStream(os);
+
+            FileInputStream fis = new FileInputStream(temp);
+            byte[] buffer = new byte[8192];
+            int len;
+            while ((len = fis.read(buffer)) > 0) {
+                dos.writeInt(len);
+                dos.write(buffer, 0, len);
+            }
+            dos.writeInt(0);
+            dos.flush();
+            fis.close();
+
+            connection.getWriter().println(MessageFormatter.createOkResponse("FILE_DOWNLOAD_DONE"));
+            connection.getWriter().flush();
+
+            FileTransferManager.getInstance().setDownloadComplete(transferId);
+
+            connection.exit();
+        } catch (Exception e) {
+            connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_DOWNLOAD_DONE", 11007));
+            connection.exit();
+        }
     }
 }

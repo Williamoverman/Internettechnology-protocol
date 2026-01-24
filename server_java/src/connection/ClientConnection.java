@@ -7,6 +7,7 @@ import protocol.ClientMessenger;
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
 
 public class ClientConnection {
     private Socket clientSocket;
@@ -35,6 +36,23 @@ public class ClientConnection {
 
     public boolean isConnected() {
         return connected && !clientSocket.isClosed();
+    }
+
+    public InputStream getInputStream() throws IOException {
+        return clientSocket.getInputStream();
+    }
+
+    public PrintWriter getWriter() {
+        return writer;
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+        return clientSocket.getOutputStream();
+    }
+
+    public void closeReader() throws IOException {
+        if (reader != null)
+            reader.close();
     }
 
     public void exit() {

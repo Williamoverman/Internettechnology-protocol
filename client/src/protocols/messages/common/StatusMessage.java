@@ -28,6 +28,14 @@ public class StatusMessage implements MessageHandler {
                     case 10003 -> "No pending invitation";
                     case 10004 -> "Invalid Choice (choices are heads/tails)";
                     case 10005 -> "No active game/game has already ended";
+                    case 11000  -> "Recipient does not exist";
+                    case 11001  -> "Cannot send file to yourself";
+                    case 11002  -> "Sender or recipient already in a file transfer";
+                    case 11003  -> "No pending offer / nothing to accept";
+                    case 11004  -> "Invalid file offer request";
+                    case 11005  -> "Invalid transfer ID";
+                    case 11006  -> "Checksum mismatch";
+                    case 11007  -> "Transfer error";
                     default -> "Unknown error: " + response.code();
                 };
                 System.out.println("[ERROR] " + desc);

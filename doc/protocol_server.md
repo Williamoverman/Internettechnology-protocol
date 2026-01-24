@@ -293,13 +293,13 @@ De file transfer gebeurt via aparte sockets voor upload en download, om chatten 
 ```
 C1 -> S: FILE_SEND_REQ {"recipient":"<C2>", "filename":"<file.txt>", "size":<12345>, "checksum":"<sha256hash>"}
 
-S -> C1: FILE_SEND_RESP {"status":"OK"}
+S -> C1: FILE_RESP {"status":"OK"}
 
 S -> C2: FILE_OFFER {"from":"<C1>", "filename":"<file.txt>", "size":<12345>, "checksum":"<sha256hash>"}
 
 C2 -> S: FILE_ACCEPT {}
 
-S -> C2: FILE_ACCEPT_RESP {"status":"OK", "transfer_id":"<uuid>"}
+S -> C2: FILE_RESP {"status":"OK"}
 
 S -> C1: FILE_ACCEPTED {"transfer_id":"<uuid>", "accepter":"<C2>"}
 ```

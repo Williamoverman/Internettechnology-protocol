@@ -3,6 +3,7 @@ package dispatchers;
 import protocols.MessageHandler;
 import protocols.messages.ToH.*;
 import protocols.messages.common.*;
+import protocols.messages.filetransfer.*;
 
 import java.util.HashMap;
 
@@ -35,6 +36,11 @@ public class MessageDispatcher {
         handlers.put("TOH_TIE", new TieMessage());
         handlers.put("TOH_RESULT", new ResultMessage());
         handlers.put("TOH_END", new EndResultMessage());
+
+        // file transfer
+        handlers.put("FILE_OFFER", new FileOfferMessage());
+        handlers.put("FILE_RESP", new StatusMessage());
+        handlers.put("FILE_ACCEPTED", new FileAcceptedMessage());
     }
 
     /**

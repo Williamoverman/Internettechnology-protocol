@@ -69,6 +69,10 @@ public class ClientMessenger {
         connection.sendMessage(MessageFormatter.createErrorResponse(header, code));
     }
 
+    public void sendAccepted(String transferId, String accepter) {
+        connection.sendMessage(MessageFormatter.createFileAccepted(transferId, accepter));
+    }
+
     /**
      * send parse error to client
      */
