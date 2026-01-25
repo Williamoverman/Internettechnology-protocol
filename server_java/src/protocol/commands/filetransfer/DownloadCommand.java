@@ -15,7 +15,7 @@ import java.util.Map;
 public record DownloadCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
-        Type mapType = new TypeToken<Map<String, String>>(){}.getType();
+        Type mapType = new TypeToken<Map<String, String>>() {}.getType();
         Map<String, String> data = gson.fromJson(jsonBody, mapType);
         String transferId = data.get("transfer_id");
         if (transferId == null) {
@@ -37,8 +37,8 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
             }
         }
 
-        File temp = transfer.getTempFile();
-        if (temp == null || !temp.exists()) {
+        File tempFile = transfer.getTempFile();
+        if (tempFile == null || !tempFile.exists()) {
             messenger.sendError("FILE_DOWNLOAD_READY", 11007);
             return;
         }
@@ -46,12 +46,12 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
         try {
             messenger.sendOK("FILE_DOWNLOAD_READY");
 
-            DataOutputStream dos = new DataOutputStream(connection.getOutputStream());
-            try (FileInputStream fis = new FileInputStream(temp)) {
-                LengthPrefixedOutputStream out = new LengthPrefixedOutputStream(dos);
-                fis.transferTo(out);
-                dos.writeInt(0);
-                dos.flush();
+            DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
+            try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
+                LengthPrefixedOutputStream out = new LengthPrefixedOutputStream(dataOutputStream);
+                fileInputStream.transferTo(out);
+                dataOutputStream.writeInt(0);
+                dataOutputStream.flush();
             }
 
             connection.getWriter().println(MessageFormatter.createOkResponse("FILE_DOWNLOAD_DONE"));

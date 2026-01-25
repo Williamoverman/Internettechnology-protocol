@@ -11,7 +11,8 @@ import java.io.FileInputStream;
 public record FileSendCommand(CommandSender sender) implements CommandHandler {
     @Override
     public boolean execute(String args) {
-        String[] parts = args.trim().split(" ", 2);
+        String trimmedArgs = args == null ? "" : args.trim();
+        String[] parts = trimmedArgs.split(" ", 2);
         if (parts.length < 2) {
             System.out.println("Usage: fileoffer <username> <path/to/file>");
             return true;
@@ -21,7 +22,7 @@ public record FileSendCommand(CommandSender sender) implements CommandHandler {
         File file = new File(parts[1]);
 
         if (!file.isFile() || !file.canRead()) {
-            System.out.println("File not found or not readable: " + file);
+            System.out.println("File not found or not readable: " + file.getPath());
             return true;
         }
 
@@ -34,7 +35,9 @@ public record FileSendCommand(CommandSender sender) implements CommandHandler {
             return true;
         }
 
-        System.out.println("Offering file: " + file.getName() + " (" + size + " bytes) to " + recipient);
+        System.out.printf("[FILE_SEND] Offering %s (%d bytes) to %s%n",
+                file.getName(), size, recipient);
+
         sender.fileSend(recipient, file.getName(), size, checksum);
 
         FileTransferState.setPendingUpload(file);
@@ -44,17 +47,19 @@ public record FileSendCommand(CommandSender sender) implements CommandHandler {
     }
 
     private String computeSHA256(File file) throws Exception {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] buf = new byte[8192];
-            int len;
-            while ((len = fis.read(buf)) > 0) {
-                md.update(buf, 0, len);
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = fis.read(buffer)) > 0) {
+                digest.update(buffer, 0, read);
             }
         }
-        byte[] digest = md.digest();
+        byte[] bytes = digest.digest();
         StringBuilder sb = new StringBuilder();
-        for (byte b : digest) sb.append(String.format("%02x", b & 0xff));
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b & 0xff));
+        }
         return sb.toString();
     }
 }

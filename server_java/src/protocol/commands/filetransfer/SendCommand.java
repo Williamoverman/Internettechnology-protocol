@@ -42,7 +42,12 @@ public record SendCommand(ClientMessenger messenger, ClientConnection connection
         }
 
         messenger.sendOK("FILE_RESP");
-        String message = MessageFormatter.createFileOffer(sender, request.filename(), request.size(), request.checksum());
+
+        String message = MessageFormatter.createFileOffer(sender,
+                request.filename(),
+                request.size(),
+                request.checksum());
+
         ClientMessenger.sendTo(recipientConn, message);
     }
 }

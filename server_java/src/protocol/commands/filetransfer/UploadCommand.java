@@ -16,7 +16,7 @@ import java.util.Map;
 public record UploadCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
-        Type mapType = new TypeToken<Map<String, String>>(){}.getType();
+        Type mapType = new TypeToken<Map<String, String>>() {}.getType();
         Map<String, String> data = gson.fromJson(jsonBody, mapType);
         String transferId = data.get("transfer_id");
         if (transferId == null) {
@@ -31,13 +31,13 @@ public record UploadCommand(ClientMessenger messenger, ClientConnection connecti
         }
 
         try {
-            File temp = File.createTempFile("transfer_", null);
-            transfer.setTempFile(temp);
+            File tempFile = File.createTempFile("transfer_", null);
+            transfer.setTempFile(tempFile);
 
             messenger.sendOK("FILE_UPLOAD_READY");
 
             try (DataInputStream dis = new DataInputStream(connection.getInputStream());
-                 FileOutputStream fos = new FileOutputStream(temp)) {
+                 FileOutputStream fos = new FileOutputStream(tempFile)) {
                 byte[] buffer = new byte[8192];
                 while (true) {
                     int length = dis.readInt();
@@ -48,10 +48,10 @@ public record UploadCommand(ClientMessenger messenger, ClientConnection connecti
                 }
             }
 
-            String calculatedChecksum = calculateChecksum(temp);
+            String calculatedChecksum = calculateChecksum(tempFile);
             if (!calculatedChecksum.equals(transfer.getChecksum())) {
                 connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE", 11006));
-                temp.delete();
+                tempFile.delete();
                 connection.exit();
                 return;
             }

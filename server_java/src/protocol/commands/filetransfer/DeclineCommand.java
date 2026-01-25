@@ -24,10 +24,10 @@ public record DeclineCommand(ClientMessenger messenger, ClientConnection connect
 
         messenger.sendOK("FILE_RESP");
 
-        ClientConnection senderConn = registry.getConnection(offer.getSender());
-        if (senderConn != null) {
+        ClientConnection senderConnection = registry.getConnection(offer.getSender());
+        if (senderConnection != null) {
             String declinedMsg = MessageFormatter.createFileDeclined(decliner);
-            ClientMessenger.sendTo(senderConn, declinedMsg);
+            ClientMessenger.sendTo(senderConnection, declinedMsg);
         }
     }
 }

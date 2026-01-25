@@ -18,7 +18,7 @@ public class FileAcceptedMessage implements MessageHandler {
             String transferId = node.path("transfer_id").asText();
             String accepter = node.path("accepter").asText();
 
-            System.out.printf("[FILE_ACCEPTED] Accepted by %s", accepter);
+            System.out.printf("[FILE_ACCEPTED] Accepted by %s%n", accepter);
 
             FileTransferState.setWaitingForAcceptResponse(false);
             FileTransferState.setLastTransferId(transferId);
@@ -56,14 +56,12 @@ public class FileAcceptedMessage implements MessageHandler {
     }
 
     private void downloadFile(String transferId, String filename, String expectedChecksum, long expectedSize) {
-        File out = null;
+        File file = new File(filename);
 
         try (Socket socket = new Socket(Config.SERVER_ADDRESS, Config.SERVER_PORT)) {
             InputStream is = socket.getInputStream();
-            OutputStream os = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(os, true);
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 
-            // hi message
             readLineUnbuffered(is);
 
             writer.println("FILE_DOWNLOAD_INIT {\"transfer_id\":\"" + transferId + "\"}");
@@ -71,90 +69,60 @@ public class FileAcceptedMessage implements MessageHandler {
 
             String line = readLineUnbuffered(is);
             if (line == null || !line.startsWith("FILE_DOWNLOAD_READY ")) {
-                System.out.println("✗ Did not receive FILE_DOWNLOAD_READY");
+                System.out.println("Download not ready");
                 return;
             }
-
             if (line.contains("\"status\":\"ERROR\"")) {
-                System.out.println("✗ Server error on download init: " + line);
+                System.out.println("Download error: " + line);
                 return;
             }
 
             System.out.println("Starting download: " + filename + " (" + expectedSize + " bytes)");
 
             DataInputStream dis = new DataInputStream(is);
-            out = new File(filename);
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            long received = 0;
 
-            try (FileOutputStream fos = new FileOutputStream(out)) {
-                long received = 0;
-                long lastProgressReport = 0;
-                MessageDigest md = MessageDigest.getInstance("SHA-256");
+            try (FileOutputStream fos = new FileOutputStream(file)) {
                 byte[] buffer = new byte[8192];
-
                 while (true) {
                     int len = dis.readInt();
-                    if (len == 0) break;
-                    if (len < 0) throw new IOException("Negative chunk size: " + len);
+                    if (len <= 0) break;
                     if (len > buffer.length) buffer = new byte[len];
-
                     dis.readFully(buffer, 0, len);
-
                     fos.write(buffer, 0, len);
                     md.update(buffer, 0, len);
                     received += len;
-
-                    if (expectedSize > 1_000_000 && received - lastProgressReport > expectedSize / 10) {
-                        int progress = (int) ((received * 100) / expectedSize);
-                        System.out.printf("  Download progress: %d%% (%d/%d bytes)\n",
-                                progress, received, expectedSize);
-                        lastProgressReport = received;
-                    }
                 }
+            }
 
-                if (received != expectedSize) {
-                    System.out.printf("Size mismatch: expected %d, got %d → deleting file%n",
-                            expectedSize, received);
-                    fos.close();
-                    out.delete();
-                    return;
-                }
+            if (received != expectedSize) {
+                System.out.println("Download size mismatch");
+                file.delete();
+                return;
+            }
 
-                String computed = bytesToHex(md.digest());
-                if (!computed.equalsIgnoreCase(expectedChecksum)) {
-                    System.out.printf("Checksum mismatch: expected %s, got %s → deleting file%n",
-                            expectedChecksum, computed);
-                    fos.close();
-                    out.delete();
-                    return;
-                }
+            String computed = bytesToHex(md.digest());
+            if (!computed.equalsIgnoreCase(expectedChecksum)) {
+                System.out.println("Download checksum mismatch");
+                file.delete();
+                return;
             }
 
             String done = readLineUnbuffered(is);
-            if (done != null && done.startsWith("FILE_DOWNLOAD_DONE ")) {
-                if (done.contains("\"status\":\"OK\"")) {
-                    System.out.println("Download completed successfully → " + filename);
-                } else {
-                    System.out.println("Download finished with error: " + done);
-                    if (out.exists()) {
-                        out.delete();
-                    }
-                }
+            if (done != null && done.startsWith("FILE_DOWNLOAD_DONE ") && done.contains("\"status\":\"OK\"")) {
+                System.out.println("Download completed: " + filename);
+            } else if (done != null) {
+                System.out.println("Download finished with error: " + done);
+                file.delete();
             } else {
-                System.out.println("Warning: Did not receive FILE_DOWNLOAD_DONE message");
+                System.out.println("Download finished without status");
             }
 
-        } catch (IOException e) {
-            System.err.println("Download failed (I/O error): " + e.getMessage());
-            if (out != null && out.exists()) {
-                out.delete();
-                System.out.println("Deleted incomplete file");
-            }
         } catch (Exception e) {
             System.err.println("Download failed: " + e.getMessage());
-            e.printStackTrace();
-            if (out != null && out.exists()) {
-                out.delete();
-                System.out.println("Deleted incomplete file");
+            if (file.exists()) {
+                file.delete();
             }
         }
     }

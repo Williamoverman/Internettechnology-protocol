@@ -12,12 +12,16 @@ public class HelpCommand implements CommandHandler {
         System.out.println("dm <username> <message> - DM to a user");
         System.out.println("help - Show this help");
         System.out.println("bye - Exit server and client");
-        System.out.println("\n==== Tails Or Heads game commands ====\n");
+        System.out.println("==== Tails Or Heads game commands ====");
         System.out.println("invite <opponent> - invite a user to a game of ToH");
         System.out.println("accept - accept the invitation");
         System.out.println("decline - decline the invitation");
         System.out.println("choice <choice> - make a choice");
-        System.out.println("=====================================\n");
+        System.out.println("==== File transfer commands ====");
+        System.out.println("fileoffer <user> <filepath> - offer a user an file");
+        System.out.println("fileaccept - accept the file");
+        System.out.println("filedecline - decline the file");
+        System.out.println("======================================");
         return true;
     }
 }

@@ -25,9 +25,9 @@ public record AcceptCommand(ClientMessenger messenger, ClientConnection connecti
         String acceptedMsg = MessageFormatter.createFileAccepted(transfer.getTransferId(), accepter);
         messenger.sendAccepted(transfer.getTransferId(), accepter);
 
-        ClientConnection senderConn = registry.getConnection(transfer.getSender());
-        if (senderConn != null) {
-            ClientMessenger.sendTo(senderConn, acceptedMsg);
+        ClientConnection senderConnection = registry.getConnection(transfer.getSender());
+        if (senderConnection != null) {
+            ClientMessenger.sendTo(senderConnection, acceptedMsg);
         }
     }
 }
