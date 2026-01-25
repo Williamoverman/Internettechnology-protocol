@@ -50,9 +50,6 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
                 fileInputStream.transferTo(connection.getOutputStream());
             }
 
-            connection.getWriter().println(MessageFormatter.createOkResponse("FILE_DOWNLOAD_DONE"));
-            connection.getWriter().flush();
-
             FileTransferManager.getInstance().setDownloadComplete(transferId);
         } catch (Exception e) {
             connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_DOWNLOAD_DONE", 11007));

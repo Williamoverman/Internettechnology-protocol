@@ -38,7 +38,7 @@ public record UploadCommand(ClientMessenger messenger, ClientConnection connecti
 
             MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-            InputStream in = new LimitedInputStream(connection.getInputStream(), transfer.getSize());
+            InputStream in = connection.getInputStream();
             try (FileOutputStream fos = new FileOutputStream(tempFile);
                  DigestOutputStream dos = new DigestOutputStream(fos, md)) {
 
@@ -58,52 +58,16 @@ public record UploadCommand(ClientMessenger messenger, ClientConnection connecti
 
             FileTransferManager.getInstance().setUploadComplete(transferId, true);
             connection.getWriter().println(MessageFormatter.createOkResponse("FILE_UPLOAD_DONE"));
+            connection.getWriter().flush();
 
         } catch (Exception e) {
-            connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE",
-                    e instanceof IOException && e.getMessage().contains("checksum") ? 11006 : 11007));
+            connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE", e instanceof IOException && e.getMessage().contains("checksum") ? 11006 : 11007));
             File temp = transfer.getTempFile();
             if (temp != null && temp.exists()) {
                 temp.delete();
             }
         } finally {
             connection.exit();
-        }
-    }
-
-    private static class LimitedInputStream extends FilterInputStream {
-        private long left;
-
-        public LimitedInputStream(InputStream in, long limit) {
-            super(in);
-            this.left = limit;
-        }
-
-        @Override
-        public int read() throws IOException {
-            if (left <= 0) {
-                return -1;
-            }
-            int result = super.read();
-            if (result != -1) {
-                left--;
-            }
-            return result;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            if (left <= 0) {
-                return -1;
-            }
-            if (len > left) {
-                len = (int) left;
-            }
-            int result = super.read(b, off, len);
-            if (result != -1) {
-                left -= result;
-            }
-            return result;
         }
     }
 }

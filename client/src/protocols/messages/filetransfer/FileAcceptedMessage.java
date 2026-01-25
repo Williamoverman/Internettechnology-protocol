@@ -75,18 +75,10 @@ public class FileAcceptedMessage implements MessageHandler {
             long size = file.length();
             try (FileInputStream fis = new FileInputStream(file)) {
                 long sent = fis.transferTo(socket.getOutputStream());
-                if (sent != size) {
+                if (sent != size)
                     System.out.println("Upload incompleet: " + sent + " / " + size);
-                }
             }
-
-            String done = readLine(is);
-            if (done != null && done.contains("\"status\":\"OK\"")) {
-                System.out.println("Upload succesvol: " + file.getName());
-            } else {
-                System.out.println("Upload fout: " + done);
-            }
-
+            socket.shutdownOutput();
         } catch (Exception e) {
             System.err.println("Upload mislukt: " + e.getMessage());
         }
@@ -112,29 +104,21 @@ public class FileAcceptedMessage implements MessageHandler {
             System.out.println("Download start: " + filename + " (" + expectedSize + " bytes)");
 
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            InputStream limitedIn = new LimitedInputStream(is, expectedSize);
 
             try (FileOutputStream fos = new FileOutputStream(file);
                  DigestOutputStream dos = new DigestOutputStream(fos, md)) {
 
-                long received = limitedIn.transferTo(dos);
+                long received = is.transferTo(dos);
 
-                if (received != expectedSize) {
+                if (received != expectedSize)
                     throw new IOException("Size mismatch: " + received + " != " + expectedSize);
-                }
 
                 String computed = bytesToHex(md.digest());
-                if (!computed.equalsIgnoreCase(expectedChecksum)) {
+                if (!computed.equalsIgnoreCase(expectedChecksum))
                     throw new IOException("Checksum mismatch");
-                }
             }
 
-            String done = readLine(is);
-            if (done != null && done.contains("\"status\":\"OK\"")) {
-                System.out.println("Download succesvol: " + filename);
-            } else {
-                throw new IOException("Server status niet OK: " + done);
-            }
+            System.out.println("Download succesvol: " + filename);
 
         } catch (Exception e) {
             System.err.println("Download mislukt: " + e.getMessage());
@@ -154,41 +138,5 @@ public class FileAcceptedMessage implements MessageHandler {
 
     private static String bytesToHex(byte[] bytes) {
         return HexFormat.of().formatHex(bytes);
-    }
-
-    private static class LimitedInputStream extends FilterInputStream {
-        private long left;
-
-        public LimitedInputStream(InputStream in, long limit) {
-            super(in);
-            this.left = limit;
-        }
-
-        @Override
-        public int read() throws IOException {
-            if (left <= 0) {
-                return -1;
-            }
-            int result = super.read();
-            if (result != -1) {
-                left--;
-            }
-            return result;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException {
-            if (left <= 0) {
-                return -1;
-            }
-            if (len > left) {
-                len = (int) left;
-            }
-            int result = super.read(b, off, len);
-            if (result != -1) {
-                left -= result;
-            }
-            return result;
-        }
     }
 }

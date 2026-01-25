@@ -68,9 +68,9 @@ public class ClientConnection {
         userRegistry.removeConnection(this);
 
         try {
-            reader.close();
-            writer.close();
-            clientSocket.close();
+            if (writer != null) writer.close();
+            if (reader != null) reader.close();
+            if (clientSocket != null && !clientSocket.isClosed()) clientSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
