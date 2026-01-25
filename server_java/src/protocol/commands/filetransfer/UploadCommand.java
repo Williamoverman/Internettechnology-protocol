@@ -36,15 +36,22 @@ public record UploadCommand(ClientMessenger messenger, ClientConnection connecti
 
             messenger.sendOK("FILE_UPLOAD_READY");
 
-            try (DataInputStream dis = new DataInputStream(connection.getInputStream());
+            try (InputStream in = connection.getInputStream();
                  FileOutputStream fos = new FileOutputStream(tempFile)) {
                 byte[] buffer = new byte[8192];
-                while (true) {
-                    int length = dis.readInt();
-                    if (length == 0) break;
-                    if (length > buffer.length) buffer = new byte[length];
-                    dis.readFully(buffer, 0, length);
-                    fos.write(buffer, 0, length);
+                long remaining = transfer.getSize();
+                while (remaining > 0) {
+                    int toRead = (int) Math.min(buffer.length, remaining);
+                    int read = in.read(buffer, 0, toRead);
+                    if (read == -1) break;
+                    fos.write(buffer, 0, read);
+                    remaining -= read;
+                }
+                if (remaining != 0) {
+                    connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE", 11007));
+                    tempFile.delete();
+                    connection.exit();
+                    return;
                 }
             }
 

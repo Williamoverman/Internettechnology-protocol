@@ -46,12 +46,8 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
         try {
             messenger.sendOK("FILE_DOWNLOAD_READY");
 
-            DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
             try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
-                LengthPrefixedOutputStream out = new LengthPrefixedOutputStream(dataOutputStream);
-                fileInputStream.transferTo(out);
-                dataOutputStream.writeInt(0);
-                dataOutputStream.flush();
+                fileInputStream.transferTo(connection.getOutputStream());
             }
 
             connection.getWriter().println(MessageFormatter.createOkResponse("FILE_DOWNLOAD_DONE"));
@@ -66,24 +62,5 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
         }
     }
 
-    private static class LengthPrefixedOutputStream extends OutputStream {
-        private final DataOutputStream out;
-
-        LengthPrefixedOutputStream(DataOutputStream out) {
-            this.out = out;
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            byte[] single = {(byte) b};
-            write(single, 0, 1);
-        }
-
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            if (len <= 0) return;
-            out.writeInt(len);
-            out.write(b, off, len);
-        }
-    }
+ 
 }

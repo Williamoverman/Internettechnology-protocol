@@ -79,20 +79,20 @@ public class FileAcceptedMessage implements MessageHandler {
 
             System.out.println("Starting download: " + filename + " (" + expectedSize + " bytes)");
 
-            DataInputStream dis = new DataInputStream(is);
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             long received = 0;
 
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 byte[] buffer = new byte[8192];
-                while (true) {
-                    int len = dis.readInt();
-                    if (len <= 0) break;
-                    if (len > buffer.length) buffer = new byte[len];
-                    dis.readFully(buffer, 0, len);
-                    fos.write(buffer, 0, len);
-                    md.update(buffer, 0, len);
-                    received += len;
+                long remaining = expectedSize;
+                while (remaining > 0) {
+                    int toRead = (int) Math.min(buffer.length, remaining);
+                    int read = is.read(buffer, 0, toRead);
+                    if (read == -1) break;
+                    fos.write(buffer, 0, read);
+                    md.update(buffer, 0, read);
+                    received += read;
+                    remaining -= read;
                 }
             }
 
@@ -159,11 +159,7 @@ public class FileAcceptedMessage implements MessageHandler {
             }
 
             try (FileInputStream fis = new FileInputStream(file)) {
-                DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                LengthPrefixedOutputStream out = new LengthPrefixedOutputStream(dos);
-                fis.transferTo(out);
-                dos.writeInt(0);
-                dos.flush();
+                fis.transferTo(socket.getOutputStream());
             }
 
             String done = reader.readLine();
@@ -182,26 +178,7 @@ public class FileAcceptedMessage implements MessageHandler {
         }
     }
 
-    private static class LengthPrefixedOutputStream extends OutputStream {
-        private final DataOutputStream out;
-
-        LengthPrefixedOutputStream(DataOutputStream out) {
-            this.out = out;
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            byte[] single = {(byte) b};
-            write(single, 0, 1);
-        }
-
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            if (len <= 0) return;
-            out.writeInt(len);
-            out.write(b, off, len);
-        }
-    }
+ 
 
     private static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
