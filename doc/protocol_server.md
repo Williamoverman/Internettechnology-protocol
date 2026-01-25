@@ -314,15 +314,6 @@ C1 -> S: FILE_UPLOAD_INIT {"transfer_id":"<uuid>"}
 S -> C1: FILE_RESP {"status":"OK"}
 ```
 
-Daarna stuurt C1 binary chunks.
-S ontvangt, schrijft naar temp file, checkt checksum.
-```
-S -> C1: FILE_UPLOAD_DONE {"status":"OK"}
-```
-
-of ERROR.
-Sluit socket.
-
 ### Download (aparte socket)
 Client C2 opent nieuwe socket (na accept):
 ```

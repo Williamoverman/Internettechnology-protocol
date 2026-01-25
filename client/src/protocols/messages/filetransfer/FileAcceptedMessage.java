@@ -119,7 +119,6 @@ public class FileAcceptedMessage implements MessageHandler {
             }
 
             System.out.println("Download succesvol: " + filename);
-
         } catch (Exception e) {
             System.err.println("Download mislukt: " + e.getMessage());
             if (file.exists()) file.delete();

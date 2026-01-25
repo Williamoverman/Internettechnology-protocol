@@ -1,26 +1,22 @@
 package protocol.commands.filetransfer;
 
-import com.google.gson.reflect.TypeToken;
 import connection.ClientConnection;
 import domain.filetransfer.FileTransfer;
 import managers.FileTransferManager;
 import protocol.ClientMessenger;
-import protocol.MessageFormatter;
 import protocol.commands.ICommandHandler;
+import requests.filetransfer.UploadRequest;
 
 import java.io.*;
-import java.lang.reflect.Type;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.HexFormat;
-import java.util.Map;
 
 public record UploadCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
-        Type mapType = new TypeToken<Map<String, String>>() {}.getType();
-        Map<String, String> data = gson.fromJson(jsonBody, mapType);
-        String transferId = data.get("transfer_id");
+        UploadRequest data = gson.fromJson(jsonBody, UploadRequest.class);
+        String transferId = data.transfer_id();
         if (transferId == null) {
             messenger.sendError("FILE_UPLOAD_READY", 11005);
             return;
@@ -45,27 +41,21 @@ public record UploadCommand(ClientMessenger messenger, ClientConnection connecti
                 messenger.sendOK("FILE_UPLOAD_READY");
 
                 long received = in.transferTo(dos);
-
-                if (received != transfer.getSize()) {
+                if (received != transfer.getSize())
                     throw new IOException("Size mismatch: " + received + " != " + transfer.getSize());
-                }
 
                 String computed = HexFormat.of().formatHex(md.digest());
-                if (!computed.equalsIgnoreCase(transfer.getChecksum())) {
+                if (!computed.equalsIgnoreCase(transfer.getChecksum()))
                     throw new IOException("Checksum mismatch");
-                }
             }
 
             FileTransferManager.getInstance().setUploadComplete(transferId, true);
-            connection.getWriter().println(MessageFormatter.createOkResponse("FILE_UPLOAD_DONE"));
-            connection.getWriter().flush();
-
+            messenger.sendOK("FILE_UPLOAD_DONE");
         } catch (Exception e) {
-            connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE", e instanceof IOException && e.getMessage().contains("checksum") ? 11006 : 11007));
+            messenger.sendError("FILE_UPLOAD_DONE", e instanceof IOException && e.getMessage().contains("checksum") ? 11006 : 11007);
             File temp = transfer.getTempFile();
-            if (temp != null && temp.exists()) {
+            if (temp != null && temp.exists())
                 temp.delete();
-            }
         } finally {
             connection.exit();
         }

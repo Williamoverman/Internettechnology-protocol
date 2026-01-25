@@ -1,23 +1,19 @@
 package protocol.commands.filetransfer;
 
-import com.google.gson.reflect.TypeToken;
 import connection.ClientConnection;
 import domain.filetransfer.FileTransfer;
 import managers.FileTransferManager;
 import protocol.ClientMessenger;
-import protocol.MessageFormatter;
 import protocol.commands.ICommandHandler;
+import requests.filetransfer.UploadRequest;
 
 import java.io.*;
-import java.lang.reflect.Type;
-import java.util.Map;
 
 public record DownloadCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
-        Type mapType = new TypeToken<Map<String, String>>() {}.getType();
-        Map<String, String> data = gson.fromJson(jsonBody, mapType);
-        String transferId = data.get("transfer_id");
+        UploadRequest data = gson.fromJson(jsonBody, UploadRequest.class);
+        String transferId = data.transfer_id();
         if (transferId == null) {
             messenger.sendError("FILE_DOWNLOAD_READY", 11005);
             return;
@@ -52,7 +48,7 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
 
             FileTransferManager.getInstance().setDownloadComplete(transferId);
         } catch (Exception e) {
-            connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_DOWNLOAD_DONE", 11007));
+            messenger.sendError("FILE_DOWNLOAD_DONE", 11007);
         } finally {
             connection.exit();
         }
