@@ -11,14 +11,14 @@ import requests.filetransfer.SendRequest;
 public record SendCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
     @Override
     public void process(String jsonBody) {
-        SendRequest request = gson.fromJson(jsonBody, SendRequest.class);
-        if (request == null || request.filename() == null || request.checksum() == null || request.size() <= 0) {
-            messenger.sendError("FILE_RESP", 11004);
+        if (!registry.isLoggedIn(connection)) {
+            messenger.sendError("FILE_RESP", 67);
             return;
         }
 
-        if (!registry.isLoggedIn(connection)) {
-            messenger.sendError("FILE_RESP", 67);
+        SendRequest request = gson.fromJson(jsonBody, SendRequest.class);
+        if (request == null || request.filename() == null || request.checksum() == null || request.size() <= 0) {
+            messenger.sendError("FILE_RESP", 11004);
             return;
         }
 
@@ -43,11 +43,7 @@ public record SendCommand(ClientMessenger messenger, ClientConnection connection
 
         messenger.sendOK("FILE_RESP");
 
-        String message = MessageFormatter.createFileOffer(sender,
-                request.filename(),
-                request.size(),
-                request.checksum());
-
+        String message = MessageFormatter.createFileOffer(sender, request.filename(), request.size(), request.checksum());
         ClientMessenger.sendTo(recipientConn, message);
     }
 }

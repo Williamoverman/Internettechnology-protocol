@@ -311,10 +311,10 @@ S -> C1: HI {"version":"<version>"}
 
 C1 -> S: FILE_UPLOAD_INIT {"transfer_id":"<uuid>"}
 
-S -> C1: FILE_UPLOAD_READY {"status":"OK"}
+S -> C1: FILE_RESP {"status":"OK"}
 ```
 
-Daarna stuurt C1 binary chunks: herhaal [4 bytes length (big-endian int), chunk bytes], tot length=0.
+Daarna stuurt C1 binary chunks.
 S ontvangt, schrijft naar temp file, checkt checksum.
 ```
 S -> C1: FILE_UPLOAD_DONE {"status":"OK"}

@@ -15,7 +15,6 @@ public class FileDeclinedMessage implements MessageHandler {
 
             FileTransferState.setWaitingForAcceptResponse(false);
             FileTransferState.setPendingUpload(null);
-
         } catch (Exception e) {
             System.err.println("Bad FILE_DECLINED json: " + e.getMessage());
         }

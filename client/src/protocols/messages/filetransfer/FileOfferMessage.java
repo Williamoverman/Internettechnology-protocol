@@ -17,8 +17,7 @@ public class FileOfferMessage implements MessageHandler {
 
             PendingOfferResponse offer = new PendingOfferResponse(from, filename, size, checksum);
 
-            System.out.printf("[FILE_OFFER] %s wants to send you: %s (%d bytes, sha256:%s)%n",
-                    offer.from(), offer.filename(), offer.size(), offer.checksum());
+            System.out.printf("[FILE_OFFER] %s wants to send you: %s (%d bytes, sha256:%s)%n", offer.from(), offer.filename(), offer.size(), offer.checksum());
 
             FileTransferState.setPendingOffer(offer);
         } catch (Exception e) {

@@ -10,7 +10,9 @@ import protocol.commands.ICommandHandler;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.HexFormat;
 import java.util.Map;
 
 public record UploadCommand(ClientMessenger messenger, ClientConnection connection) implements ICommandHandler {
@@ -34,59 +36,74 @@ public record UploadCommand(ClientMessenger messenger, ClientConnection connecti
             File tempFile = File.createTempFile("transfer_", null);
             transfer.setTempFile(tempFile);
 
-            messenger.sendOK("FILE_UPLOAD_READY");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
 
-            try (InputStream in = connection.getInputStream();
-                 FileOutputStream fos = new FileOutputStream(tempFile)) {
-                byte[] buffer = new byte[8192];
-                long remaining = transfer.getSize();
-                while (remaining > 0) {
-                    int toRead = (int) Math.min(buffer.length, remaining);
-                    int read = in.read(buffer, 0, toRead);
-                    if (read == -1) break;
-                    fos.write(buffer, 0, read);
-                    remaining -= read;
-                }
-                if (remaining != 0) {
-                    connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE", 11007));
-                    tempFile.delete();
-                    connection.exit();
-                    return;
-                }
-            }
+            InputStream in = new LimitedInputStream(connection.getInputStream(), transfer.getSize());
+            try (FileOutputStream fos = new FileOutputStream(tempFile);
+                 DigestOutputStream dos = new DigestOutputStream(fos, md)) {
 
-            String calculatedChecksum = calculateChecksum(tempFile);
-            if (!calculatedChecksum.equals(transfer.getChecksum())) {
-                connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE", 11006));
-                tempFile.delete();
-                connection.exit();
-                return;
+                messenger.sendOK("FILE_UPLOAD_READY");
+
+                long received = in.transferTo(dos);
+
+                if (received != transfer.getSize()) {
+                    throw new IOException("Size mismatch: " + received + " != " + transfer.getSize());
+                }
+
+                String computed = HexFormat.of().formatHex(md.digest());
+                if (!computed.equalsIgnoreCase(transfer.getChecksum())) {
+                    throw new IOException("Checksum mismatch");
+                }
             }
 
             FileTransferManager.getInstance().setUploadComplete(transferId, true);
-
             connection.getWriter().println(MessageFormatter.createOkResponse("FILE_UPLOAD_DONE"));
-            connection.exit();
+
         } catch (Exception e) {
-            connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE", 11007));
+            connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_UPLOAD_DONE",
+                    e instanceof IOException && e.getMessage().contains("checksum") ? 11006 : 11007));
+            File temp = transfer.getTempFile();
+            if (temp != null && temp.exists()) {
+                temp.delete();
+            }
+        } finally {
             connection.exit();
         }
     }
 
-    private String calculateChecksum(File file) throws Exception {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        try (InputStream is = new FileInputStream(file)) {
-            byte[] buffer = new byte[8192];
-            int len;
-            while ((len = is.read(buffer)) > 0) {
-                md.update(buffer, 0, len);
+    private static class LimitedInputStream extends FilterInputStream {
+        private long left;
+
+        public LimitedInputStream(InputStream in, long limit) {
+            super(in);
+            this.left = limit;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (left <= 0) {
+                return -1;
             }
+            int result = super.read();
+            if (result != -1) {
+                left--;
+            }
+            return result;
         }
-        byte[] digest = md.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte b : digest) {
-            sb.append(String.format("%02x", b & 0xff));
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            if (left <= 0) {
+                return -1;
+            }
+            if (len > left) {
+                len = (int) left;
+            }
+            int result = super.read(b, off, len);
+            if (result != -1) {
+                left -= result;
+            }
+            return result;
         }
-        return sb.toString();
     }
 }

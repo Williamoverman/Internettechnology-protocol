@@ -5,8 +5,11 @@ import senders.CommandSender;
 import utils.FileTransferState;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.io.FileInputStream;
+import java.util.HexFormat;
 
 public record FileSendCommand(CommandSender sender) implements CommandHandler {
     @Override
@@ -29,7 +32,7 @@ public record FileSendCommand(CommandSender sender) implements CommandHandler {
         long size = file.length();
         String checksum;
         try {
-            checksum = computeSHA256(file);
+            checksum = computeSha256(file);
         } catch (Exception e) {
             System.out.println("Cannot compute SHA-256: " + e.getMessage());
             return true;
@@ -46,20 +49,17 @@ public record FileSendCommand(CommandSender sender) implements CommandHandler {
         return true;
     }
 
-    private String computeSHA256(File file) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        try (FileInputStream fis = new FileInputStream(file)) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = fis.read(buffer)) > 0) {
-                digest.update(buffer, 0, read);
+    private String computeSha256(File file) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+
+        try (FileInputStream fis = new FileInputStream(file);
+             DigestInputStream dis = new DigestInputStream(fis, md)) {
+                dis.transferTo(OutputStream.nullOutputStream());
             }
-        }
-        byte[] bytes = digest.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b & 0xff));
-        }
-        return sb.toString();
+        return bytesToHex(md.digest());
+    }
+
+    private static String bytesToHex(byte[] bytes) {
+        return HexFormat.of().formatHex(bytes);
     }
 }

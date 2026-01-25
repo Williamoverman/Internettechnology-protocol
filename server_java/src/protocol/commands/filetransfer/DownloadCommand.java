@@ -54,10 +54,9 @@ public record DownloadCommand(ClientMessenger messenger, ClientConnection connec
             connection.getWriter().flush();
 
             FileTransferManager.getInstance().setDownloadComplete(transferId);
-
-            connection.exit();
         } catch (Exception e) {
             connection.getWriter().println(MessageFormatter.createErrorResponse("FILE_DOWNLOAD_DONE", 11007));
+        } finally {
             connection.exit();
         }
     }

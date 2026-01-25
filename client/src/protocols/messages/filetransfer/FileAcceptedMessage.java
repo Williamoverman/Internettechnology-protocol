@@ -8,7 +8,9 @@ import utils.FileTransferState;
 
 import java.io.*;
 import java.net.Socket;
+import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.HexFormat;
 
 public class FileAcceptedMessage implements MessageHandler {
     @Override
@@ -55,136 +57,138 @@ public class FileAcceptedMessage implements MessageHandler {
         }
     }
 
-    private void downloadFile(String transferId, String filename, String expectedChecksum, long expectedSize) {
-        File file = new File(filename);
+    private void uploadFile(String transferId, File file) {
+        try (Socket socket = new Socket(Config.SERVER_ADDRESS, Config.SERVER_PORT);
+             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+             InputStream is = socket.getInputStream()) {
 
-        try (Socket socket = new Socket(Config.SERVER_ADDRESS, Config.SERVER_PORT)) {
-            InputStream is = socket.getInputStream();
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+            readLine(is);
 
-            readLineUnbuffered(is);
+            writer.println("FILE_UPLOAD_INIT {\"transfer_id\":\"" + transferId + "\"}");
 
-            writer.println("FILE_DOWNLOAD_INIT {\"transfer_id\":\"" + transferId + "\"}");
-            writer.flush();
-
-            String line = readLineUnbuffered(is);
-            if (line == null || !line.startsWith("FILE_DOWNLOAD_READY ")) {
-                System.out.println("Download not ready");
-                return;
-            }
-            if (line.contains("\"status\":\"ERROR\"")) {
-                System.out.println("Download error: " + line);
+            String ready = readLine(is);
+            if (ready == null || !ready.contains("\"status\":\"OK\"")) {
+                System.out.println("Server niet klaar voor upload: " + ready);
                 return;
             }
 
-            System.out.println("Starting download: " + filename + " (" + expectedSize + " bytes)");
-
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            long received = 0;
-
-            try (FileOutputStream fos = new FileOutputStream(file)) {
-                byte[] buffer = new byte[8192];
-                long remaining = expectedSize;
-                while (remaining > 0) {
-                    int toRead = (int) Math.min(buffer.length, remaining);
-                    int read = is.read(buffer, 0, toRead);
-                    if (read == -1) break;
-                    fos.write(buffer, 0, read);
-                    md.update(buffer, 0, read);
-                    received += read;
-                    remaining -= read;
+            long size = file.length();
+            try (FileInputStream fis = new FileInputStream(file)) {
+                long sent = fis.transferTo(socket.getOutputStream());
+                if (sent != size) {
+                    System.out.println("Upload incompleet: " + sent + " / " + size);
                 }
             }
 
-            if (received != expectedSize) {
-                System.out.println("Download size mismatch");
-                file.delete();
-                return;
-            }
-
-            String computed = bytesToHex(md.digest());
-            if (!computed.equalsIgnoreCase(expectedChecksum)) {
-                System.out.println("Download checksum mismatch");
-                file.delete();
-                return;
-            }
-
-            String done = readLineUnbuffered(is);
-            if (done != null && done.startsWith("FILE_DOWNLOAD_DONE ") && done.contains("\"status\":\"OK\"")) {
-                System.out.println("Download completed: " + filename);
-            } else if (done != null) {
-                System.out.println("Download finished with error: " + done);
-                file.delete();
+            String done = readLine(is);
+            if (done != null && done.contains("\"status\":\"OK\"")) {
+                System.out.println("Upload succesvol: " + file.getName());
             } else {
-                System.out.println("Download finished without status");
+                System.out.println("Upload fout: " + done);
             }
 
         } catch (Exception e) {
-            System.err.println("Download failed: " + e.getMessage());
-            if (file.exists()) {
-                file.delete();
-            }
+            System.err.println("Upload mislukt: " + e.getMessage());
         }
     }
 
-    private String readLineUnbuffered(InputStream is) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    private void downloadFile(String transferId, String filename, String expectedChecksum, long expectedSize) {
+        File file = new File(filename);
+
+        try (Socket socket = new Socket(Config.SERVER_ADDRESS, Config.SERVER_PORT);
+             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
+             InputStream is = socket.getInputStream()) {
+
+            readLine(is);
+
+            writer.println("FILE_DOWNLOAD_INIT {\"transfer_id\":\"" + transferId + "\"}");
+
+            String ready = readLine(is);
+            if (ready == null || !ready.contains("\"status\":\"OK\"")) {
+                System.out.println("Server niet klaar voor download: " + ready);
+                return;
+            }
+
+            System.out.println("Download start: " + filename + " (" + expectedSize + " bytes)");
+
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            InputStream limitedIn = new LimitedInputStream(is, expectedSize);
+
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 DigestOutputStream dos = new DigestOutputStream(fos, md)) {
+
+                long received = limitedIn.transferTo(dos);
+
+                if (received != expectedSize) {
+                    throw new IOException("Size mismatch: " + received + " != " + expectedSize);
+                }
+
+                String computed = bytesToHex(md.digest());
+                if (!computed.equalsIgnoreCase(expectedChecksum)) {
+                    throw new IOException("Checksum mismatch");
+                }
+            }
+
+            String done = readLine(is);
+            if (done != null && done.contains("\"status\":\"OK\"")) {
+                System.out.println("Download succesvol: " + filename);
+            } else {
+                throw new IOException("Server status niet OK: " + done);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Download mislukt: " + e.getMessage());
+            if (file.exists()) file.delete();
+        }
+    }
+
+    private String readLine(InputStream is) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int b;
         while ((b = is.read()) != -1) {
             if (b == '\n') break;
-            if (b != '\r') bos.write(b);
+            if (b != '\r') baos.write(b);
         }
-        if (bos.size() == 0 && b == -1) return null;
-        return bos.toString("UTF-8");
+        return baos.size() == 0 && b == -1 ? null : baos.toString("UTF-8");
     }
-
-    private void uploadFile(String transferId, File file) {
-        try (Socket socket = new Socket(Config.SERVER_ADDRESS, Config.SERVER_PORT)) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-
-            reader.readLine();
-
-            writer.println("FILE_UPLOAD_INIT {\"transfer_id\":\"" + transferId + "\"}");
-            writer.flush();
-
-            String line = reader.readLine();
-            if (line == null || !line.startsWith("FILE_UPLOAD_READY ")) {
-                System.out.println("Did not receive FILE_UPLOAD_READY");
-                return;
-            }
-            if (line.contains("\"status\":\"ERROR\"")) {
-                System.out.println("Server error on upload init: " + line);
-                return;
-            }
-
-            try (FileInputStream fis = new FileInputStream(file)) {
-                fis.transferTo(socket.getOutputStream());
-            }
-
-            String done = reader.readLine();
-            if (done != null && done.startsWith("FILE_UPLOAD_DONE ")) {
-                System.out.println();
-                if (done.contains("\"status\":\"OK\""))
-                    System.out.println("Upload completed successfully → " + file.getName());
-                else
-                    System.out.println("Upload finished with error: " + done);
-            }
-        } catch (IOException e) {
-            System.err.println("Upload failed (I/O error): " + e.getMessage());
-        } catch (Exception e) {
-            System.err.println("Upload failed: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
- 
 
     private static String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b & 0xff));
+        return HexFormat.of().formatHex(bytes);
+    }
+
+    private static class LimitedInputStream extends FilterInputStream {
+        private long left;
+
+        public LimitedInputStream(InputStream in, long limit) {
+            super(in);
+            this.left = limit;
         }
-        return sb.toString();
+
+        @Override
+        public int read() throws IOException {
+            if (left <= 0) {
+                return -1;
+            }
+            int result = super.read();
+            if (result != -1) {
+                left--;
+            }
+            return result;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            if (left <= 0) {
+                return -1;
+            }
+            if (len > left) {
+                len = (int) left;
+            }
+            int result = super.read(b, off, len);
+            if (result != -1) {
+                left -= result;
+            }
+            return result;
+        }
     }
 }
